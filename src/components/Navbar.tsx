@@ -23,6 +23,7 @@ import {
   Layers,
   FileText,
   Mail,
+  Heart,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/store";
@@ -30,6 +31,7 @@ import { useLogoutMutation } from "@/lib/api/authApi";
 import { logout } from "@/store/slices/authSlice";
 import { baseApi } from "@/lib/api/baseApi";
 import { toast } from "sonner";
+import { useWishlist } from "@/context/WishlistContext";
 
 const navLinks = [
   { name: "Home", href: "/", icon: Home },
@@ -53,6 +55,7 @@ function Header() {
   const profileRef = useRef<HTMLDivElement>(null);
 
   const dispatch = useDispatch();
+  const { wishlistCount } = useWishlist();
   const { isAuthenticated, user } = useSelector(
     (state: RootState) => state.auth,
   );
@@ -279,6 +282,20 @@ function Header() {
                 </div>
               </div>
 
+              {/* Wishlist Button with Dynamic Badge Counter */}
+              <Link
+                href="/student/wishlist"
+                aria-label="Wishlist"
+                className="relative text-slate-700 hover:text-rose-600 p-2 rounded-xl hover:bg-rose-50/60 transition-all duration-500 ease-out group hover:scale-105 active:scale-95"
+              >
+                <Heart className="w-5 h-5 transition-transform duration-500 ease-out group-hover:scale-110 group-hover:text-rose-500" />
+                {wishlistCount > 0 && (
+                  <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-rose-500 to-pink-600 text-[9px] font-bold text-white shadow-md shadow-rose-500/30 transition-transform duration-500 ease-out group-hover:scale-110 animate-pulse">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
+
               {/* Cart Button with Animated Badge */}
               <Link
                 href="/shop"
@@ -402,6 +419,20 @@ function Header() {
                 </>
               )}
             </div>
+
+            {/* ── Mobile: Wishlist Quick Button ── */}
+            <Link
+              href="/student/wishlist"
+              aria-label="Wishlist"
+              className="lg:hidden relative w-10 h-10 flex items-center justify-center text-slate-700 hover:text-rose-600 hover:bg-rose-50/60 active:scale-90 rounded-xl transition-all duration-300 ease-out mr-1"
+            >
+              <Heart className="w-5 h-5 text-slate-700" />
+              {wishlistCount > 0 && (
+                <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-rose-500 to-pink-600 text-[9px] font-bold text-white shadow-md shadow-rose-500/30 animate-pulse">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
 
             {/* ── Mobile: Animated Hamburger / Close toggle — RIGHT side ── */}
             <button

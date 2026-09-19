@@ -96,6 +96,7 @@ const navGroups = [
         href: "/admin/courses",
         icon: LiaCloudShowersHeavySolid,
       },
+      { label: "Coupons", href: "/admin/coupons", icon: Ticket },
       { label: "Percentage", href: "/admin/percentage", icon: BarChart },
     ],
   },

@@ -102,6 +102,7 @@ export default function CourseFormModal({
       discountPrice: discountPrice ? Number(discountPrice) : undefined,
       thumbnail: finalThumbnail.trim() || undefined,
       courseUrl: courseUrl.trim() || undefined,
+      isPublished: isPublished,
       metadata: {
         level: level.trim() || undefined,
         is_premium: isPremium,

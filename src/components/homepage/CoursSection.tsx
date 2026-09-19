@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import Link from "next/link";
 import { ArrowRight, Star, Users, Clock, Heart } from "lucide-react";
 import { useGetPublicCoursesQuery } from "@/lib/api/courseApi";
+import { useWishlist } from "@/context/WishlistContext";
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -15,17 +16,15 @@ const plusJakarta = Plus_Jakarta_Sans({
 // ── skeleton ─────────────────────────────────────────────────────────────────
 function CourseCardSkeleton() {
   return (
-    <div className="bg-white rounded-[20px] border border-gray-100 overflow-hidden flex flex-col">
-      <div className="h-48 sm:h-52 bg-gray-100 animate-pulse" />
-      <div className="px-5 -mt-7 relative z-10">
-        <div className="h-14 bg-gray-100 rounded-2xl animate-pulse border border-gray-200" />
-      </div>
-      <div className="p-6 pt-4 flex flex-col gap-3">
-        <div className="h-2.5 w-20 bg-gray-100 rounded-full animate-pulse" />
-        <div className="h-4 w-full bg-gray-100 rounded-full animate-pulse" />
-        <div className="h-4 w-3/4 bg-gray-100 rounded-full animate-pulse" />
-        <div className="h-8 w-24 bg-gray-100 rounded-lg animate-pulse mt-1" />
-        <div className="h-12 w-full bg-gray-100 rounded-2xl animate-pulse mt-1" />
+    <div className="bg-white rounded-[20px] overflow-hidden border border-gray-100 shadow-sm animate-pulse flex flex-col h-[420px]">
+      <div className="h-48 bg-slate-200" />
+      <div className="p-6 flex flex-col justify-between flex-1">
+        <div className="space-y-3">
+          <div className="h-4 bg-slate-200 rounded w-1/4" />
+          <div className="h-6 bg-slate-200 rounded w-3/4" />
+          <div className="h-4 bg-slate-200 rounded w-full" />
+        </div>
+        <div className="h-10 bg-slate-200 rounded-xl" />
       </div>
     </div>
   );
@@ -41,7 +40,8 @@ function CourseCard({
   index: number;
   isInView: boolean;
 }) {
-  const [saved, setSaved] = useState(false);
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const isSaved = isInWishlist(String(course.id));
   const baseDelay = index * 0.12;
 
   return (
@@ -76,7 +76,7 @@ function CourseCard({
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/10 pointer-events-none" />
 
         {/* top row: level/tag pill + save button (glass) */}
-        <div className="absolute top-3.5 left-3.5 right-3.5 flex items-start justify-between">
+        <div className="absolute top-3.5 left-3.5 right-3.5 flex items-start justify-between z-10">
           <motion.span
             className="text-[11px] font-extrabold px-3 py-1.5 rounded-full shadow-md backdrop-blur-md bg-white/90 border border-white/60"
             style={{ color: course.tagColor }}
@@ -91,17 +91,27 @@ function CourseCard({
             type="button"
             onClick={(e) => {
               e.preventDefault();
-              setSaved((s) => !s);
+              e.stopPropagation();
+              toggleWishlist({
+                id: String(course.id),
+                title: course.title,
+                image: course.imageUrl,
+                price: typeof course.price === "number" ? course.price : parseFloat(String(course.price).replace(/[^0-9.]/g, "") || "0"),
+                rating: course.rating,
+                reviews: course.reviews,
+                category: course.category,
+                potential: course.tag,
+              });
             }}
-            aria-label={saved ? "Remove from wishlist" : "Save course"}
+            aria-label={isSaved ? "Remove from wishlist" : "Save course"}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
             transition={{ delay: baseDelay + 0.3, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="w-8 h-8 rounded-full bg-white/85 backdrop-blur-md border border-white/60 shadow-md flex items-center justify-center hover:bg-white hover:scale-110 active:scale-90 transition-all duration-200"
+            className="w-8.5 h-8.5 rounded-full bg-white/90 backdrop-blur-md border border-white/80 shadow-md flex items-center justify-center hover:bg-white hover:scale-110 active:scale-90 transition-all duration-200 cursor-pointer"
           >
             <Heart
               className={`w-4 h-4 transition-colors ${
-                saved ? "fill-rose-500 text-rose-500" : "text-gray-500"
+                isSaved ? "fill-rose-500 text-rose-500" : "text-gray-500 hover:text-rose-500"
               }`}
             />
           </motion.button>

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Star, Users, Clock, Heart } from "lucide-react";
 import { Course } from "./types";
+import { useWishlist } from "@/context/WishlistContext";
 
 interface Props {
   course: Course;
@@ -12,7 +12,8 @@ interface Props {
 }
 
 export default function CourseCard({ course, index }: Props) {
-  const [saved, setSaved] = useState(false);
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const isSaved = isInWishlist(String(course.id));
   const baseDelay = (index % 8) * 0.08;
 
   const originalPrice = course.price > 0 ? `$${course.price + 40}` : null;
@@ -55,14 +56,24 @@ export default function CourseCard({ course, index }: Props) {
             type="button"
             onClick={(e) => {
               e.preventDefault();
-              setSaved((s) => !s);
+              e.stopPropagation();
+              toggleWishlist({
+                id: String(course.id),
+                title: course.title,
+                image: course.image,
+                price: course.price,
+                rating: course.rating,
+                reviews: course.reviews,
+                category: course.category,
+                potential: course.potential,
+              });
             }}
-            aria-label={saved ? "Remove from wishlist" : "Save course"}
-            className="w-8 h-8 rounded-full bg-white/85 backdrop-blur-md border border-white/60 shadow-md flex items-center justify-center hover:bg-white hover:scale-110 active:scale-90 transition-all duration-200"
+            aria-label={isSaved ? "Remove from wishlist" : "Save course"}
+            className="w-8.5 h-8.5 rounded-full bg-white/90 backdrop-blur-md border border-white/80 shadow-md flex items-center justify-center hover:bg-white hover:scale-110 active:scale-90 transition-all duration-200 cursor-pointer"
           >
             <Heart
               className={`w-4 h-4 transition-colors ${
-                saved ? "fill-rose-500 text-rose-500" : "text-gray-500"
+                isSaved ? "fill-rose-500 text-rose-500" : "text-gray-500 hover:text-rose-500"
               }`}
             />
           </button>

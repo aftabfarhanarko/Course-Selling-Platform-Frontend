@@ -32,7 +32,6 @@ import LiveInsight from "@/components/homepage/LiveInsight";
 
 export default function AboutPage() {
   const pageRef = useRef<HTMLDivElement>(null);
-  const isPageInView = useInView(pageRef, { once: false, amount: 0.1 });
 
   const [activeAccordion, setActiveAccordion] = useState<number | null>(0);
 
@@ -66,13 +65,6 @@ export default function AboutPage() {
     },
   ];
 
-  // Ultra-smooth & slow transition configuration
-  const getSmoothTransition = (delay: number = 0) => ({
-    duration: 1.5,
-    delay,
-    ease: "easeInOut" as const,
-  });
-
   return (
     <div
       ref={pageRef}
@@ -84,34 +76,33 @@ export default function AboutPage() {
         <div className="absolute top-1/2 -left-32 w-[550px] h-[550px] rounded-full bg-[#EEF2FF]/60 blur-3xl" />
       </div>
 
-      <div className="w-10/12 mx-auto relative z-10 md:px-11">
+      <div className="w-11/12 max-w-7xl mx-auto relative z-10 px-4 sm:px-6 lg:px-8">
         
         {/* ── HERO BREADCRUMB & TITLE ── */}
         <motion.div
-          initial={{ opacity: 0, y: 35 }}
-          animate={isPageInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 35 }}
-          transition={getSmoothTransition(0)}
-          className="text-center max-w-2xl mx-auto mb-10 sm:mb-12 space-y-3"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.2 }}
+          transition={{ duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] }}
+          className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 space-y-4"
         >
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
-            Our Mission To Make Education <br className="hidden sm:inline" /> Easy And Accessible To All
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#5B50E6]/10 text-[#5B50E6] text-xs sm:text-sm font-bold tracking-wide uppercase">
+            <Sparkles className="w-4 h-4" /> Empowering Global Education
+          </div>
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.2]">
+            Our Mission To Make Education <br className="hidden sm:inline" /> High-Quality & Accessible To All
           </h1>
-          <motion.p 
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-slate-600 sm:text-base text-xs sm:text-sm leading-relaxed font-semibold max-w-xl mx-auto"
-          >
-            Begin your program at any of EduNova's global centers, laying a strong groundwork for advancement and propelling your success to new heights.
-          </motion.p>
+          <p className="text-slate-600 text-sm sm:text-base lg:text-lg leading-relaxed font-medium max-w-2xl mx-auto">
+            Begin your journey at any of EduNova's global learning hubs, laying a solid foundation for career growth and accelerating your success with globally recognized credentials.
+          </p>
         </motion.div>
 
         {/* ── HERO IMAGE GALLERY ── */}
         <motion.div
-          initial={{ opacity: 0, y: 35 }}
-          animate={isPageInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 35 }}
-          transition={getSmoothTransition(0.2)}
+          initial={{ opacity: 0, y: 50, scale: 0.97 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: false, amount: 0.2 }}
+          transition={{ duration: 0.9, ease: [0.21, 0.47, 0.32, 0.98] }}
           className="w-full overflow-hidden py-4 mb-16 sm:mb-20"
         >
           <div className="flex items-center justify-center gap-3 sm:gap-5 md:gap-6 max-w-full mx-auto px-2">
@@ -153,104 +144,150 @@ export default function AboutPage() {
           </div>
         </motion.div>
 
+        {/* ── STATS SECTION ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.15 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-16 sm:mb-24"
+        >
+          {stats.map((stat, idx) => {
+            const Icon = stat.icon;
+            return (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.2 }}
+                transition={{ duration: 0.6, delay: idx * 0.1, ease: "easeOut" }}
+                className="bg-white/80 backdrop-blur-sm border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm hover:shadow-md hover:border-[#5B50E6]/30 transition-all duration-300"
+              >
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-[#5B50E6]/10 flex items-center justify-center text-[#5B50E6] mb-3">
+                  <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
+                  {stat.value}
+                </div>
+                <div className="text-sm sm:text-base font-bold text-slate-800 mt-1">
+                  {stat.label}
+                </div>
+                <div className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
+                  {stat.desc}
+                </div>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+
         {/* ── SECTION 1: GLOBAL OVERVIEW WITH IMAGE ── */}
         <motion.div
-          initial={{ opacity: 0, y: 35 }}
-          animate={isPageInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 35 }}
-          transition={getSmoothTransition(0.35)}
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.15 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
           className="mb-16 sm:mb-24 text-center max-w-full mx-auto space-y-6"
         >
           {/* Location Badges Pill */}
-          <div className="inline-flex flex-wrap items-center justify-center gap-2 p-1.5 rounded-full bg-white border border-slate-200/80 shadow-sm text-xs font-bold text-slate-700">
-            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-100">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" /> EduNova Global
+          <div className="inline-flex flex-wrap items-center justify-center gap-2 p-2 rounded-full bg-white border border-slate-200/80 shadow-sm text-xs sm:text-sm font-bold text-slate-700">
+            <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-50 border border-slate-100">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" /> EduNova Global
             </span>
-            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-100">
-              <span className="w-2 h-2 rounded-full bg-blue-500" /> EduNova UK
+            <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-50 border border-slate-100">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> EduNova UK
             </span>
-            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-100">
-              <span className="w-2 h-2 rounded-full bg-[#5B50E6]" /> EduNova Worldwide
+            <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-50 border border-slate-100">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#5B50E6]" /> EduNova Worldwide
             </span>
           </div>
 
-          <motion.p 
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-slate-600 sm:text-base text-xs sm:text-sm leading-relaxed max-w-xl mx-auto font-semibold"
-          >
-            EduNova is an authorized global educational institute offering vocational and language courses, licensed by the global education authority. We are committed to delivering high-quality education.
-          </motion.p>
+          <p className="text-slate-700 text-sm sm:text-lg lg:text-xl leading-relaxed max-w-2xl mx-auto font-semibold">
+            EduNova is an authorized global educational institute offering vocational and professional courses, fully licensed by global education authorities. We are dedicated to providing world-class learning experiences.
+          </p>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center text-left pt-2">
-            <div className="lg:col-span-6 h-72 sm:h-88 rounded-3xl overflow-hidden shadow-xl border border-slate-100">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center text-left pt-4">
+            <motion.div
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.2 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="lg:col-span-6 h-80 sm:h-96 lg:h-[420px] rounded-3xl overflow-hidden shadow-xl border border-slate-100"
+            >
               <img
                 src="https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=800&q=80"
                 alt="Campus building"
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000 ease-out"
               />
-            </div>
+            </motion.div>
 
-            <div className="lg:col-span-6 space-y-4 max-w-lg">
-              <motion.p 
-                initial={{ opacity: 0, y: 15 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.3 }}
-                transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-                className="text-slate-600 text-xs sm:text-sm leading-relaxed font-medium"
-              >
-                EduNova is a leading educational company that offers internationally recognized education at levels 3, 4, and 5. As an accredited partner of global education bodies, we ensure that our students receive high-quality and globally recognized qualifications. With our partnership, students can access a wide range of educational opportunities and benefit from a comprehensive and reputable educational experience. At our learning facility, students can freely choose the international qualification they desire to pursue. Depending on the program chosen by the student, our team of experts will provide guidance on the most effective strategy for structuring their studies and optimizing their learning approach.
-              </motion.p>
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.2 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="lg:col-span-6 space-y-5"
+            >
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
+                Globally Recognized Qualifications Built for the Future of Work
+              </h2>
+              <div className="space-y-3.5 text-slate-600 text-sm sm:text-base leading-relaxed font-normal">
+                <p>
+                  EduNova provides internationally recognized education across Level 3, Level 4, and Level 5 qualification frameworks. In partnership with global education bodies, we ensure our students receive rigorous, top-tier qualifications valued by top employers globally.
+                </p>
+                <p>
+                  At our learning hubs, students can choose the qualification path best suited to their aspirations. Our senior faculty provides strategic guidance on structuring studies and mastering core skills for maximal career impact.
+                </p>
+              </div>
               <Link
                 href="/courses"
-                className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#5B50E6] hover:bg-[#4D42DB] text-white font-bold text-xs transition-all duration-500 shadow-md shadow-[#5B50E6]/25 hover:scale-105"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#5B50E6] hover:bg-[#4D42DB] text-white font-bold text-xs sm:text-sm transition-all duration-300 shadow-lg shadow-[#5B50E6]/25 hover:scale-105"
               >
-                Learn More
+                Explore All Programs <ArrowRight className="w-4 h-4" />
               </Link>
-            </div>
+            </motion.div>
           </div>
         </motion.div>
 
         {/* ── SECTION 2: DIVERSE PROGRAMS ACCORDION & IMAGE ── */}
         <motion.div
-          initial={{ opacity: 0, y: 35 }}
-          animate={isPageInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 35 }}
-          transition={getSmoothTransition(0.5)}
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.15 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
           className="mb-16 sm:mb-24"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
             {/* Left Column: Heading + Accordion */}
-            <div className="lg:col-span-6 space-y-5">
-              <div className="space-y-3 max-w-lg">
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
-                  A diverse range of programs offered in various languages and educational frameworks
+            <motion.div
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.2 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="lg:col-span-6 space-y-5"
+            >
+              <div className="space-y-3">
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
+                  A Diverse Spectrum of Academic & Professional Frameworks
                 </h2>
-                <motion.p 
-                  initial={{ opacity: 0, y: 15 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false, amount: 0.3 }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
-                  className="text-slate-600 sm:text-base text-xs sm:text-sm leading-relaxed font-medium"
-                >
-                  We service wide range of educational programs where each lead tailored outcome depend on the qualification provider we using on the program you assigned for and depend on which center you are assigned or studying in. As student its highly advice you learn more about each program you applying for and the qualification provider of what you applying for.
-                </motion.p>
+                <p className="text-slate-600 text-sm sm:text-base leading-relaxed font-normal">
+                  We deliver specialized educational programs tailored to distinct outcome goals depending on the awarding body and learning pathway selected.
+                </p>
               </div>
 
               {/* Accordion Programs List */}
-              <div className="space-y-3 pt-1">
+              <div className="space-y-3.5 pt-1">
                 {[
                   {
-                    title: "British Programs Explanation",
-                    content: "Our educational institute offers British programs in partnership with a respected third-party qualification provider. These programs adhere to the curriculum and standards of British educational institutions, providing students with an internationally recognized education. As an approved academic center, EduNova delivers prestigious qualifications from our partner, ensuring students receive a comprehensive education focused on academic excellence, critical thinking, and practical skills development."
+                    title: "British Qualifications Framework (Ofqual Standard)",
+                    content: "Delivered in partnership with premier UK qualification providers, these programs follow rigorous British educational standards. Students earn globally accredited diplomas emphasizing academic depth, software architecture principles, and critical analytical thinking."
                   },
                   {
-                    title: "German Programs Explanation",
-                    content: "Our German curriculum features engineering-grade coursework, dual vocational study programs, and practical applied science frameworks modeled after premier European institutes for deep technical competence."
+                    title: "German Dual Vocational & Technical Standards",
+                    content: "Modelled after Germany's famed dual-education systems, these technical tracks focus on hands-on software engineering, applied computer science, and real-world system development."
                   },
                   {
-                    title: "French Programs Explanation",
-                    content: "The French qualification track focuses on analytical rigor, software design patterns, and international accreditation, allowing students to seamlessly transfer credits or build global engineering careers."
+                    title: "French European Credit Transfer (ECTS) Track",
+                    content: "Emphasizing system architecture, algorithmic precision, and European accreditation, this track enables seamless credit transfers and opens pathways to global tech leadership."
                   }
                 ].map((item, index) => {
                   const isOpen = activeAccordion === index;
@@ -259,20 +296,20 @@ export default function AboutPage() {
                       key={item.title}
                       initial={false}
                       onClick={() => setActiveAccordion(isOpen ? null : index)}
-                      className={`border rounded-2xl p-4 cursor-pointer transition-colors duration-300 ${
+                      className={`border rounded-2xl p-4.5 cursor-pointer transition-all duration-300 ${
                         isOpen
-                          ? "bg-slate-50 border-slate-300 shadow-sm"
+                          ? "bg-slate-50/90 border-[#5B50E6]/40 shadow-sm"
                           : "bg-white border-slate-200 hover:border-[#5B50E6]/40 hover:shadow-sm"
                       }`}
                     >
-                      <div className="flex items-center justify-between font-bold text-xs sm:text-sm text-slate-900 select-none">
+                      <div className="flex items-center justify-between font-bold text-sm sm:text-base text-slate-900 select-none gap-4">
                         <span>{item.title}</span>
                         <motion.span 
                           animate={{ rotate: isOpen ? 180 : 0 }}
                           transition={{ duration: 0.3, ease: "easeInOut" }}
-                          className="w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center text-xs font-bold text-slate-600 bg-white"
+                          className="shrink-0 w-7 h-7 rounded-full border border-slate-300 flex items-center justify-center text-xs font-bold text-slate-600 bg-white shadow-xs"
                         >
-                          <ChevronDown className="w-3.5 h-3.5 text-slate-600" />
+                          <ChevronDown className="w-3.5 h-3.5 text-slate-700" />
                         </motion.span>
                       </div>
                       
@@ -285,7 +322,7 @@ export default function AboutPage() {
                         transition={{ duration: 0.4, ease: [0.04, 0.62, 0.23, 0.98] }}
                         className="overflow-hidden"
                       >
-                        <p className="text-slate-600 text-xs sm:text-sm leading-relaxed font-medium pt-3 mt-2 border-t border-slate-200/80">
+                        <p className="text-slate-600 text-xs sm:text-sm leading-relaxed font-normal pt-3 mt-2.5 border-t border-slate-200/80">
                           {item.content}
                         </p>
                       </motion.div>
@@ -293,126 +330,132 @@ export default function AboutPage() {
                   );
                 })}
               </div>
-            </div>
+            </motion.div>
 
             {/* Right Column: Group Students Image */}
-            <div className="lg:col-span-6 h-80 sm:h-[420px] rounded-3xl overflow-hidden shadow-xl border border-slate-100">
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.2 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="lg:col-span-6 h-80 sm:h-[460px] rounded-3xl overflow-hidden shadow-xl border border-slate-100"
+            >
               <img
                 src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80"
                 alt="Students in library"
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000 ease-out"
               />
-            </div>
+            </motion.div>
           </div>
         </motion.div>
 
         {/* ── SECTION 3: HISTORY AND BACKGROUND ── */}
         <motion.div
-          initial={{ opacity: 0, y: 35 }}
-          animate={isPageInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 35 }}
-          transition={getSmoothTransition(0.65)}
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.15 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
           className="mb-16 sm:mb-24"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
             {/* Left Column: Title & Multi-paragraph History */}
-            <div className="lg:col-span-7 space-y-5">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                History and Background
-              </h2>
+            <motion.div
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.2 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="lg:col-span-7 space-y-5"
+            >
+              <div className="space-y-1.5">
+                <span className="text-xs font-bold text-[#5B50E6] uppercase tracking-widest">Our Story</span>
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
+                  A Decade of Educational Innovation & Leadership
+                </h2>
+              </div>
 
-              <motion.div 
-                initial={{ opacity: 0, y: 15 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.3 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="space-y-4 text-slate-600 text-xs sm:text-sm leading-relaxed font-medium max-w-xl"
-              >
+              <div className="space-y-4 text-slate-600 text-sm sm:text-base leading-relaxed font-normal">
                 <p>
-                  EduNova is a subsidiary of the renowned Global Tech Group, a leading educational entity with a rich history dating back to 2012. Backed by the education division, EduNova provides students with a world-class educational experience, drawing upon the vast expertise, resources, and global networks of the founders.
+                  EduNova is a flagship subsidiary of Global Tech Group, a leading educational institution founded in 2012. Built upon a foundation of academic excellence, EduNova combines world-class curriculum with the practical experience of global industry architects.
                 </p>
 
                 <p>
-                  With over 300+ dedicated mentors and engineering staff, EduNova has successfully guided more than 50,000 students from various technical fields to graduation over the past decade. Our ultimate aim is to become a global leader in delivering software engineering and AI education for learners worldwide through a diverse range of project-based programs.
+                  With over 300+ expert mentors and senior engineers, EduNova has successfully trained and graduated over 50,000 learners across 80+ countries. Our vision is to be the premier global platform for technology and professional education.
                 </p>
 
-                <div className="pt-2 border-t border-slate-200/80">
-                  <p className="pt-2">
-                    EduNova operates under modern interactive learning models. Firstly, we establish and operate digital academies across Europe, Asia, and North America. Secondly, we invest in existing educational projects worldwide, fostering growth and development in the tech education sector. Thirdly, we offer career counseling and portfolio development services, assisting learners in achieving their dream tech roles. Lastly, our higher education focus enables students to obtain verified industry credentials online.
-                  </p>
-                </div>
-              </motion.div>
-            </div>
+                <p className="pt-2 border-t border-slate-200/80">
+                  Through modern interactive learning hubs across Europe, Asia, and North America, EduNova offers project-driven bootcamps, recognized credentials, and comprehensive career support designed to help learners secure top technology roles.
+                </p>
+              </div>
+            </motion.div>
 
             {/* Right Column: Founder Quote Card */}
-            <div className="lg:col-span-5 bg-slate-50/90 border border-slate-200/80 rounded-3xl p-6 sm:p-7 shadow-sm space-y-4">
-              <p className="text-slate-600 text-xs sm:text-sm leading-relaxed font-medium italic">
-                "EduNova was founded to bridge the gap between traditional theory and modern software engineering practices. As a tech lead, I realized the need for accessible, high-quality tech education—free from unnecessary financial burdens. Our vision is to provide practical and exceptional education, eliminating barriers and preparing students for success in a rapidly changing digital world. Join us in redefining education for a brighter future."
+            <motion.div
+              initial={{ opacity: 0, x: 40, scale: 0.96 }}
+              whileInView={{ opacity: 1, x: 0, scale: 1 }}
+              viewport={{ once: false, amount: 0.2 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="lg:col-span-5 bg-gradient-to-br from-slate-50 to-slate-100/90 border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-sm space-y-5"
+            >
+              <div className="w-10 h-10 rounded-2xl bg-[#5B50E6]/10 flex items-center justify-center text-[#5B50E6]">
+                <HeartHandshake className="w-5 h-5" />
+              </div>
+              <p className="text-slate-700 text-sm sm:text-base leading-relaxed font-medium italic">
+                "EduNova was created to eliminate the rift between traditional university theory and modern software engineering. We believe world-class education should be accessible, practical, and directly tied to real career outcomes."
               </p>
 
-              <div className="flex items-center gap-3.5 pt-2 border-t border-slate-200/80">
+              <div className="flex items-center gap-3.5 pt-3.5 border-t border-slate-200/80">
                 <img
                   src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"
                   alt="Aftab Farhan Arko"
                   className="w-12 h-12 rounded-2xl object-cover shadow-sm border border-slate-200"
                 />
                 <div>
-                  <h4 className="text-xs sm:text-sm font-extrabold text-slate-900">- Aftab Farhan Arko</h4>
-                  <p className="text-[11px] text-slate-400 font-semibold">Founder & CEO, EduNova Global</p>
+                  <h4 className="text-sm sm:text-base font-extrabold text-slate-900">Aftab Farhan Arko</h4>
+                  <p className="text-xs text-slate-500 font-semibold">Founder & CEO, EduNova Global</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </motion.div>
 
         {/* ── SECTION 4: MEET THE PEOPLE BEHIND THE INNOVATION ── */}
         <motion.div
-          initial={{ opacity: 0, y: 35 }}
-          animate={isPageInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 35 }}
-          transition={getSmoothTransition(0.8)}
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.15 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
           className="mb-16 sm:mb-20"
         >
           {/* Header Row */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-10 sm:mb-12">
-            <div className="space-y-1 max-w-md">
-              <span className="text-xs font-bold text-[#5B50E6] uppercase tracking-widest">Our Team</span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
-                Meet the People Behind the Innovation
+            <div className="space-y-1.5 max-w-xl">
+              <span className="text-xs font-bold text-[#5B50E6] uppercase tracking-widest">Leadership & Faculty</span>
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
+                Meet the Innovators Guiding Your Learning
               </h2>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 max-w-sm">
-              <motion.p 
-                initial={{ opacity: 0, y: 15 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.3 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="text-slate-600 text-xs sm:text-sm font-semibold leading-relaxed"
-              >
-                Our diverse team of strategists, developers, and technologists is united by a passion for solving real-world problems with smart, scalable solutions.
-              </motion.p>
-              <Link
-                href="/about"
-                className="shrink-0 px-5 py-2.5 rounded-full bg-[#DCEBCA] hover:bg-[#cbe0b3] text-slate-900 font-bold text-xs transition-all duration-500 hover:scale-105 shadow-sm"
-              >
-                View All
-              </Link>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 max-w-md">
+              <p className="text-slate-600 text-xs sm:text-sm font-medium leading-relaxed">
+                Our team of industry leaders, tech architects, and educators are committed to helping you achieve your career potential.
+              </p>
             </div>
           </div>
 
           {/* 4 Portrait Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {teamMembers.map((member, idx) => (
               <motion.div
                 key={member.name}
-                initial={{ opacity: 0, y: 40 }}
+                initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.2 }}
+                viewport={{ once: false, amount: 0.15 }}
                 transition={{ 
-                  duration: 0.8, 
-                  delay: idx * 0.15,
+                  duration: 0.7, 
+                  delay: idx * 0.12,
                   ease: [0.21, 0.47, 0.32, 0.98] 
                 }}
-                className="group flex flex-col space-y-3"
+                className="group flex flex-col space-y-4"
               >
                 {/* Full Height Portrait Image Container with Glass Overlay */}
                 <div className="relative w-full h-80 sm:h-96 rounded-3xl overflow-hidden bg-slate-100 shadow-md group-hover:shadow-xl transition-all duration-700 ease-out">
@@ -423,28 +466,28 @@ export default function AboutPage() {
                   />
 
                   {/* Floating Glassmorphic Social Icons Bar */}
-                  <div className="absolute bottom-4 left-4 right-4 py-2.5 px-4 rounded-2xl bg-white/25 backdrop-blur-md border border-white/40 flex items-center justify-center gap-4 text-white shadow-lg group-hover:bg-white/40 transition-all duration-500">
+                  <div className="absolute bottom-4 left-4 right-4 py-3 px-4 rounded-2xl bg-white/30 backdrop-blur-md border border-white/50 flex items-center justify-center gap-5 text-white shadow-lg group-hover:bg-white/50 transition-all duration-500">
                     <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:scale-125 transition-transform duration-300">
-                      <Facebook className="w-3.5 h-3.5" />
+                      <Facebook className="w-4 h-4 text-slate-800" />
                     </a>
                     <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:scale-125 transition-transform duration-300">
-                      <Linkedin className="w-3.5 h-3.5" />
+                      <Linkedin className="w-4 h-4 text-slate-800" />
                     </a>
                     <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:scale-125 transition-transform duration-300">
-                      <Instagram className="w-3.5 h-3.5" />
+                      <Instagram className="w-4 h-4 text-slate-800" />
                     </a>
                     <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:scale-125 transition-transform duration-300">
-                      <Twitter className="w-3.5 h-3.5" />
+                      <Twitter className="w-4 h-4 text-slate-800" />
                     </a>
                   </div>
                 </div>
 
                 {/* Member Info */}
-                <div className="space-y-0.5 pt-1">
-                  <h3 className="text-base font-extrabold text-slate-900 group-hover:text-[#5B50E6] transition-colors duration-500">
+                <div className="space-y-1 pt-1">
+                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 group-hover:text-[#5B50E6] transition-colors duration-300">
                     {member.name}
                   </h3>
-                  <p className="text-xs text-slate-400 font-semibold">{member.role}</p>
+                  <p className="text-xs sm:text-sm text-slate-500 font-semibold">{member.role}</p>
                 </div>
               </motion.div>
             ))}
@@ -455,4 +498,5 @@ export default function AboutPage() {
     </div>
   );
 }
+
 
