@@ -296,17 +296,6 @@ function Header() {
                 )}
               </Link>
 
-              {/* Cart Button with Animated Badge */}
-              <Link
-                href="/shop"
-                aria-label="Cart"
-                className="relative text-slate-700 hover:text-[#4F46E5] p-2 rounded-xl hover:bg-indigo-50/60 transition-all duration-500 ease-out group hover:scale-105 active:scale-95"
-              >
-                <ShoppingBag className="w-5 h-5 transition-transform duration-500 ease-out group-hover:-rotate-12" />
-                <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-[9px] font-bold text-white shadow-md shadow-indigo-500/30 transition-transform duration-500 ease-out group-hover:scale-110">
-                  2
-                </span>
-              </Link>
 
               {!isAuthenticated ? (
                 <div className="flex items-center gap-2">

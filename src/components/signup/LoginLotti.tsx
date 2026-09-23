@@ -25,11 +25,16 @@ export default function LoginLotti(): React.JSX.Element {
   }, []);
 
   return (
-    <div className="w-full max-w-xl">
+    <div className="w-full h-full flex items-center justify-center">
       {animationData ? (
-        <Lottie animationData={animationData} loop autoplay />
+        <Lottie
+          animationData={animationData}
+          loop
+          autoplay
+          className="w-full h-auto max-h-[580px] object-contain"
+        />
       ) : (
-        <div className="h-[340px] w-full" />
+        <div className="h-[400px] w-full bg-slate-100/50 rounded-2xl animate-pulse" />
       )}
     </div>
   );

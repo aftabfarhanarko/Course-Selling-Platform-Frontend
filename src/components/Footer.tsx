@@ -111,10 +111,16 @@ export function Footer() {
     },
   ];
 
+  const isAuthPage = Boolean(
+    pathname && (pathname === "/login" || pathname === "/signup")
+  );
+
   return (
     <footer
       ref={footerRef}
-      className={`relative w-full bg-gradient-to-b from-white via-indigo-50/40 to-[#F1F5F9] border-t border-slate-200/80 mt-12 pt-16 pb-12 overflow-hidden text-slate-700 ${plusJakarta.className}`}
+      className={`relative w-full bg-gradient-to-b from-white via-indigo-50/40 to-[#F1F5F9] border-t border-slate-200/80 ${
+        isAuthPage ? "mt-0" : "mt-12"
+      } pt-16 pb-12 overflow-hidden text-slate-700 ${plusJakarta.className}`}
     >
       {/* Decorative Top Glow Line */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1.5px] bg-gradient-to-r from-transparent via-[#5B50E6]/50 to-transparent" />
