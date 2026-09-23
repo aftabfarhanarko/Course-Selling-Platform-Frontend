@@ -67,7 +67,7 @@ function LoginFormContent(): React.JSX.Element {
 
     try {
       const response = await loginUser({ email: data.email, password: data.password }).unwrap() as any;
-      const userRole = response?.user?.role || response?.role;
+      const userRole = response?.user?.role || response?.role || response?.data?.user?.role || response?.data?.role;
       setSuccess(true);
       toast.success("Signed in!", { id: toastId });
 

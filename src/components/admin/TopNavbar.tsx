@@ -26,6 +26,7 @@ import {
   useGetNotificationsQuery,
   useMarkAllNotificationsReadMutation,
   useMarkNotificationReadMutation,
+  NotificationItem,
 } from "@/lib/api/notificationApi";
 
 export default function TopNavbar({
@@ -50,8 +51,16 @@ export default function TopNavbar({
   const [markAllRead] = useMarkAllNotificationsReadMutation();
   const [markRead] = useMarkNotificationReadMutation();
 
-  const notifications = notifData?.data || [];
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const rawNotifications = notifData?.data;
+  const notifications: NotificationItem[] = Array.isArray(rawNotifications)
+    ? rawNotifications
+    : Array.isArray(notifData)
+    ? (notifData as unknown as NotificationItem[])
+    : Array.isArray((rawNotifications as any)?.notifications)
+    ? (rawNotifications as any).notifications
+    : [];
+
+  const unreadCount = notifications.filter((n) => !n?.isRead).length;
 
   const authUser = useSelector((state: RootState) => state.auth.user);
 
