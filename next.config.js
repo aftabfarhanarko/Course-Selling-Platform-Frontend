@@ -8,6 +8,10 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "course-selling-platform-api-uwr3.onrender.com",
+      },
+      {
+        protocol: "https",
         hostname: "laser360clinic.com",
       },
       {

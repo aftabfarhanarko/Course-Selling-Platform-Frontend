@@ -27,7 +27,7 @@ export const baseApi = createApi({
     baseUrl:
       (process.env.NEXT_PUBLIC_API_BASE_URL
         ? process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, "")
-        : "http://localhost:5001"),
+        : "https://course-selling-platform-api-uwr3.onrender.com"),
 
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as RootState;
