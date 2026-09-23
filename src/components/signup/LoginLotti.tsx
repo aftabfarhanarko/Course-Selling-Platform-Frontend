@@ -12,7 +12,7 @@ export default function LoginLotti(): React.JSX.Element {
   useEffect(() => {
     let active = true;
 
-    fetch("/Login-to.json")
+    fetch("/signup.json")
       .then((res) => res.json())
       .then((data) => {
         if (active) setAnimationData(data as Record<string, unknown>);
