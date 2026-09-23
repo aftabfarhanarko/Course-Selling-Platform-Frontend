@@ -103,7 +103,7 @@ export default function TopNavbar({
       dispatch(logout());
       dispatch(baseApi.util.resetApiState());
       toast.success("Signed out", { id: toastId });
-      router.replace("/");
+      window.location.href = "/login";
     }
   };
 

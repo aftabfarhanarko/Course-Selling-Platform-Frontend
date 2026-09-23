@@ -82,6 +82,14 @@ const authSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.removeItem(AUTH_STORAGE_KEY);
+          localStorage.removeItem("token");
+          localStorage.removeItem("access_token");
+          document.cookie = "role=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+        } catch {}
+      }
     },
   },
 });

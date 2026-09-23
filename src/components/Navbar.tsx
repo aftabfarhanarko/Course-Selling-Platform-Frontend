@@ -147,7 +147,7 @@ function Header() {
       dispatch(baseApi.util.resetApiState());
       toast.success("Signed out", { id: toastId });
       closeCallback();
-      router.replace("/");
+      window.location.href = "/login";
     }
   };
 

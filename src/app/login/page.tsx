@@ -6,13 +6,44 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLoginMutation } from "@/lib/api/authApi";
 import { toast } from "sonner";
-import { Eye, EyeOff, ArrowRight, Check, Loader2 } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Check, Loader2, ShieldCheck, Store, User, Briefcase } from "lucide-react";
 import LoginLotti from "@/components/signup/LoginLotti";
 
 type LoginFormData = {
   email: string;
   password: string;
 };
+
+const DEMO_ROLES = [
+  {
+    label: "Super Admin",
+    email: "admin@edunova.com",
+    password: "Admin@123456",
+    icon: ShieldCheck,
+    style: "bg-[#FFF1F2] border-[#FECDD3] text-[#E11D48] hover:bg-[#FFE4E6]",
+  },
+  {
+    label: "Vendor",
+    email: "instructor@edunova.com",
+    password: "Instructor@123456",
+    icon: Store,
+    style: "bg-[#FEF3C7] border-[#FDE68A] text-[#D97706] hover:bg-[#FDE68A]",
+  },
+  {
+    label: "Student",
+    email: "student@edunova.com",
+    password: "Student@123456",
+    icon: User,
+    style: "bg-[#DCFCE7] border-[#BBF7D0] text-[#059669] hover:bg-[#D1FAE5]",
+  },
+  {
+    label: "Affiliate",
+    email: "affiliate@edunova.com",
+    password: "Affiliate@123456",
+    icon: Briefcase,
+    style: "bg-[#EFF6FF] border-[#BFDBFE] text-[#2563EB] hover:bg-[#DBEAFE]",
+  },
+];
 
 function LoginFormContent(): React.JSX.Element {
   const router = useRouter();
@@ -25,6 +56,7 @@ function LoginFormContent(): React.JSX.Element {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     defaultValues: { email: "", password: "" },
@@ -55,6 +87,12 @@ function LoginFormContent(): React.JSX.Element {
     }
   };
 
+  const handleQuickLogin = async (email: string, pass: string) => {
+    setValue("email", email, { shouldValidate: true });
+    setValue("password", pass, { shouldValidate: true });
+    await onSubmit({ email, password: pass });
+  };
+
   /* ─── JEVXO color palette — same as signup ─── */
   const inputBase =
     "w-full bg-[#F1F5F9] border border-[#E2E8F0] focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10 rounded-xl px-4 py-3 text-[13px] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700";
@@ -82,13 +120,34 @@ function LoginFormContent(): React.JSX.Element {
       </div>
 
       {/* Heading */}
-      <div className="text-center mb-6">
+      <div className="text-center mb-5">
         <h1 className="text-[20px] font-black text-slate-900">
           Welcome Back
         </h1>
         <p className="text-[#2563EB] text-[13px] font-semibold mt-0.5">
           Your Personal Dashboard
         </p>
+      </div>
+
+      {/* Quick Role Selectors */}
+      <div className="mb-5 p-3 rounded-2xl bg-slate-50/80 border border-slate-100">
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center mb-2">
+          ⚡ Quick Demo Login
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {DEMO_ROLES.map((role) => (
+            <button
+              key={role.label}
+              type="button"
+              onClick={() => handleQuickLogin(role.email, role.password)}
+              disabled={isSubmitting || isLoginLoading || success}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[12px] font-bold transition-all hover:scale-105 active:scale-95 shadow-2xs disabled:opacity-50 ${role.style}`}
+            >
+              <role.icon className="w-3.5 h-3.5 shrink-0" />
+              <span>{role.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

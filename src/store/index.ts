@@ -106,8 +106,7 @@ function persistRoleCookie(role: string) {
 
 function clearRoleCookie() {
   if (typeof window === "undefined") return;
-  const attrs = cookieAttrs();
-  document.cookie = `role=; Path=/; Max-Age=0; SameSite=Lax${attrs}`;
+  document.cookie = "role=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT;";
 }
 
 function persistAuth(payload: {
