@@ -12,7 +12,11 @@ import {
   SlidersHorizontal,
   Download,
   Loader2,
-  Radar,
+  Sparkles,
+  ArrowUpRight,
+  ShieldCheck,
+  RefreshCw,
+  BookOpen,
 } from "lucide-react";
 import {
   Table,
@@ -25,19 +29,13 @@ import {
 import { useGetAdminDashboardStatsQuery } from "@/lib/api/statsApi";
 import * as Icons from "lucide-react";
 
-/* ─────────────────────────────────────────────────────────────
-   FALLBACK DATA
-   Used only for fields the API genuinely returns nothing for
-   (undefined/null), so the dashboard never renders empty.
-   Real API values — including legitimate zeros or empty lists —
-   always win over this.
-   ───────────────────────────────────────────────────────────── */
-
+/* Fallback Data */
 const FALLBACK = {
   kpis: {
     totalActiveUsers: 18420,
     revenueMTD: "$482,910",
     completedTransactions: 9271,
+    totalEnrollments: 4180,
   },
   dailyData: [
     { day: "Mon", value: 210 },
@@ -67,12 +65,8 @@ const FALLBACK = {
   ],
 };
 
-/* ─────────────────────────────────────────────────────────────
-   RADAR CHART — light instrument-panel line chart: faint grid,
-   blue→cyan trace, amber pulse on the latest point.
-   ───────────────────────────────────────────────────────────── */
-
-const VaultChart = ({ data }: any) => {
+/* Interactive Animated Vault Chart */
+const VaultChart = ({ data }: { data: any[] }) => {
   const [progress, setProgress] = useState(0);
   const [hovered, setHovered] = useState<number | null>(null);
 
@@ -93,8 +87,8 @@ const VaultChart = ({ data }: any) => {
   if (!data || data.length === 0) return null;
 
   const W = 600;
-  const H = 200;
-  const PAD = { top: 16, right: 12, bottom: 30, left: 38 };
+  const H = 210;
+  const PAD = { top: 20, right: 16, bottom: 30, left: 38 };
   const innerW = W - PAD.left - PAD.right;
   const innerH = H - PAD.top - PAD.bottom;
 
@@ -126,44 +120,91 @@ const VaultChart = ({ data }: any) => {
   };
 
   const linePath = smooth(pts);
+  const areaPath = `${linePath} L ${pts[pts.length - 1].x},${H - PAD.bottom} L ${pts[0].x},${H - PAD.bottom} Z`;
   const cols = 8;
   const rows = 4;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", overflow: "visible" }}>
       <defs>
-        <linearGradient id="vaultLineLight" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#3B6FE0" />
-          <stop offset="100%" stopColor="#13B3A0" />
+        <linearGradient id="vaultLineGradient" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#5B50E6" />
+          <stop offset="100%" stopColor="#10B981" />
         </linearGradient>
-        <filter id="vaultGlowLight" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="1.4" result="blur" />
+
+        <linearGradient id="vaultAreaGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#5B50E6" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="#5B50E6" stopOpacity="0.0" />
+        </linearGradient>
+
+        <filter id="lineGlow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="3" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
-        <clipPath id="vaultRevealLight">
+
+        <clipPath id="chartReveal">
           <rect x={PAD.left} y={0} width={innerW * progress} height={H} />
         </clipPath>
       </defs>
 
-      {/* faint grid */}
+      {/* Grid lines */}
       {Array.from({ length: rows + 1 }).map((_, i) => (
-        <line key={`h${i}`} x1={PAD.left} y1={PAD.top + (i / rows) * innerH} x2={PAD.left + innerW} y2={PAD.top + (i / rows) * innerH} stroke="#EEF1F5" strokeWidth="1" />
+        <line
+          key={`h${i}`}
+          x1={PAD.left}
+          y1={PAD.top + (i / rows) * innerH}
+          x2={PAD.left + innerW}
+          y2={PAD.top + (i / rows) * innerH}
+          stroke="#F1F5F9"
+          strokeWidth="1"
+        />
       ))}
       {Array.from({ length: cols + 1 }).map((_, i) => (
-        <line key={`v${i}`} x1={PAD.left + (i / cols) * innerW} y1={PAD.top} x2={PAD.left + (i / cols) * innerW} y2={PAD.top + innerH} stroke="#F5F6F8" strokeWidth="1" />
+        <line
+          key={`v${i}`}
+          x1={PAD.left + (i / cols) * innerW}
+          y1={PAD.top}
+          x2={PAD.left + (i / cols) * innerW}
+          y2={PAD.top + innerH}
+          stroke="#F8FAFC"
+          strokeWidth="1"
+        />
       ))}
 
+      {/* Axis Day Labels */}
       {pts.map((p: any, i: number) => (
-        <text key={i} x={p.x} y={H - 6} textAnchor="middle" fontSize="10" fontFamily="ui-monospace, monospace" fill="#98A2B3">
+        <text
+          key={i}
+          x={p.x}
+          y={H - 8}
+          textAnchor="middle"
+          fontSize="10"
+          fontWeight="700"
+          fill="#94A3B8"
+        >
           {p.day}
         </text>
       ))}
 
-      <path d={linePath} fill="none" stroke="url(#vaultLineLight)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" filter="url(#vaultGlowLight)" clipPath="url(#vaultRevealLight)" />
+      {/* Gradient Area Fill */}
+      <path d={areaPath} fill="url(#vaultAreaGradient)" clipPath="url(#chartReveal)" />
 
+      {/* Smooth Line Path */}
+      <path
+        d={linePath}
+        fill="none"
+        stroke="url(#vaultLineGradient)"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        filter="url(#lineGlow)"
+        clipPath="url(#chartReveal)"
+      />
+
+      {/* Interactive Data Nodes */}
       {pts.map((p: any, i: number) => {
         const visible = p.x <= PAD.left + innerW * progress + 0.5;
         if (!visible) return null;
@@ -171,13 +212,46 @@ const VaultChart = ({ data }: any) => {
         const isLast = i === pts.length - 1;
         return (
           <g key={i}>
-            <rect x={p.x - 18} y={PAD.top} width={36} height={innerH} fill="transparent" onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)} style={{ cursor: "crosshair" }} />
-            {isLast && <circle cx={p.x} cy={p.y} r={9} fill="#A9791F" opacity="0.14" />}
-            <circle cx={p.x} cy={p.y} r={isHov ? 5.5 : 3.5} fill={isHov ? "#A9791F" : "#FFFFFF"} stroke={isHov ? "#A9791F" : "#3B6FE0"} strokeWidth={isHov ? 0 : 2} />
+            <rect
+              x={p.x - 18}
+              y={PAD.top}
+              width={36}
+              height={innerH}
+              fill="transparent"
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}
+              style={{ cursor: "pointer" }}
+            />
+            {isLast && (
+              <circle cx={p.x} cy={p.y} r={10} fill="#10B981" opacity="0.2" className="animate-ping" />
+            )}
+            <circle
+              cx={p.x}
+              cy={p.y}
+              r={isHov ? 6 : 4}
+              fill={isHov ? "#5B50E6" : "#FFFFFF"}
+              stroke={isHov ? "#FFFFFF" : "#5B50E6"}
+              strokeWidth={isHov ? 3 : 2}
+            />
             {isHov && (
-              <g>
-                <rect x={p.x - 26} y={p.y - 32} width={52} height={20} rx={4} fill="#131720" />
-                <text x={p.x} y={p.y - 18} textAnchor="middle" fontSize="10" fontWeight="700" fontFamily="ui-monospace, monospace" fill="#FFFFFF">
+              <g className="animate-in fade-in zoom-in-95 duration-150">
+                <rect
+                  x={p.x - 30}
+                  y={p.y - 36}
+                  width={60}
+                  height={24}
+                  rx={8}
+                  fill="#0F172A"
+                  className="shadow-xl"
+                />
+                <text
+                  x={p.x}
+                  y={p.y - 20}
+                  textAnchor="middle"
+                  fontSize="11"
+                  fontWeight="800"
+                  fill="#FFFFFF"
+                >
                   {p.value}
                 </text>
               </g>
@@ -189,27 +263,29 @@ const VaultChart = ({ data }: any) => {
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
-   STATUS LED — glowing dot badge instead of a flat pill
-   ───────────────────────────────────────────────────────────── */
-
+/* Status Badge Component */
 const StatusLed = ({ status }: { status: string }) => {
-  const ok = status === "Success";
-  const color = ok ? "#15803D" : "#C1382B";
+  const isOk = status === "Success";
   return (
-    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest bg-white border border-[#E4E7EC]" style={{ color }}>
-      <span className="w-1.5 h-1.5 rounded-full" style={{ background: color, boxShadow: `0 0 5px ${color}66` }} />
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+        isOk
+          ? "bg-emerald-50 text-emerald-700 border border-emerald-200/80"
+          : "bg-rose-50 text-rose-700 border border-rose-200/80"
+      }`}
+    >
+      <span
+        className={`w-1.5 h-1.5 rounded-full ${
+          isOk ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" : "bg-rose-500"
+        }`}
+      />
       {status}
     </span>
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
-   DASHBOARD
-   ───────────────────────────────────────────────────────────── */
-
 export default function Dashboard() {
-  const { data: statsData, isLoading } = useGetAdminDashboardStatsQuery();
+  const { data: statsData, isLoading, refetch } = useGetAdminDashboardStatsQuery();
 
   const [chartView, setChartView] = useState("Weekly");
   const [searchTx, setSearchTx] = useState("");
@@ -217,8 +293,6 @@ export default function Dashboard() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [chartKey, setChartKey] = useState(0);
 
-  // Per-field fallback: a real (even empty) API value always wins.
-  // Only genuinely missing (undefined/null) fields fall back.
   const transactions = statsData?.transactions ?? FALLBACK.transactions;
   const dailyData = statsData?.dailyData ?? FALLBACK.dailyData;
   const weeklyData = statsData?.weeklyData ?? FALLBACK.weeklyData;
@@ -247,82 +321,158 @@ export default function Dashboard() {
 
   const renderIcon = (iconName: string) => {
     const IconComponent = (Icons as any)[iconName] || Icons.Activity;
-    return <IconComponent size={14} />;
+    return <IconComponent size={15} />;
   };
 
   const stats = [
     { label: "Peak", value: chartData?.length ? Math.max(...chartData.map((d: any) => d.value)) : 0 },
-    { label: "Avg", value: chartData?.length ? Math.round(chartData.reduce((s: number, d: any) => s + d.value, 0) / chartData.length) : 0 },
-    { label: "Low", value: chartData?.length ? Math.min(...chartData.map((d: any) => d.value)) : 0 },
+    { label: "Average", value: chartData?.length ? Math.round(chartData.reduce((s: number, d: any) => s + d.value, 0) / chartData.length) : 0 },
+    { label: "Lowest", value: chartData?.length ? Math.min(...chartData.map((d: any) => d.value)) : 0 },
   ];
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <Loader2 className="animate-spin text-[#3B6FE0]" size={32} />
+      <div className="min-h-[80vh] bg-slate-50 flex flex-col items-center justify-center gap-3">
+        <Loader2 className="animate-spin text-[#5B50E6] w-8 h-8" />
+        <p className="text-xs font-bold text-slate-500">Loading admin metrics...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-3 sm:p-4 lg:p-6 bg-[#F7F8FA] text-[#131720] space-y-4">
-      {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#E4E7EC]">
-        <div className="flex items-center gap-4">
-          <div className="relative w-12 h-12 rounded-full border border-[#E4E7EC] bg-white flex items-center justify-center shadow-sm">
-            <Radar className="w-5 h-5 text-[#A9791F]" />
-            <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#16A34A] border-2 border-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#131720]">Dashboard</h1>
-            <p className="text-sm text-[#667085] font-medium mt-1">
-              Welcome back, Admin · Here&apos;s what&apos;s happening today.
+    <div className="min-h-screen p-4 sm:p-6 bg-slate-50/70 text-slate-900 space-y-6">
+      {/* Executive Welcome Hero Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-8 text-white shadow-xl shadow-indigo-950/10 border border-slate-800">
+        <div className="absolute top-0 right-0 -mt-12 -mr-12 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 -mb-12 w-80 h-80 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs font-bold text-indigo-200">
+              <Sparkles size={13} className="text-indigo-400" />
+              <span>Real-Time Admin Console</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white leading-tight">
+              Welcome back, Administrator
+            </h1>
+            <p className="text-sm text-slate-300 font-medium leading-relaxed">
+              Here is what is happening across your platform today. Monitor revenue performance, active users, and recent system activities.
             </p>
           </div>
-        </div>
 
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-[#E4E7EC] shadow-sm">
-          <span className="w-2 h-2 rounded-full bg-[#16A34A]" style={{ boxShadow: "0 0 5px #16A34A66" }} />
-          <span className="text-sm font-semibold text-[#344054] tracking-wide">Vault Secure</span>
-        </div>
-      </div>
+          <div className="flex items-center gap-3 self-start md:self-auto">
+            <button
+              onClick={() => refetch()}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 text-xs font-bold text-white transition-all active:scale-95 cursor-pointer"
+            >
+              <RefreshCw size={14} />
+              <span>Refresh Data</span>
+            </button>
 
-      {/* ── KPI Cards ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {[
-          { icon: <Users size={17} className="text-[#3B6FE0]" />, label: "Total Active Users", value: Number(kpis.totalActiveUsers).toLocaleString(), badge: "Live", up: true },
-          { icon: <Wallet size={17} className="text-[#13B3A0]" />, label: "Revenue", value: kpis.revenueMTD, badge: "All time", up: true },
-          { icon: <ReceiptText size={17} className="text-[#A9791F]" />, label: "Completed Transactions", value: Number(kpis.completedTransactions).toLocaleString(), badge: "Total", up: true },
-        ].map((c, i) => (
-          <div key={i} className="relative bg-white rounded-xl p-4 pl-5 border border-[#E4E7EC] shadow-sm overflow-hidden">
-            <span className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#3B6FE0] to-[#13B3A0]" />
-            <div className="flex items-start justify-between mb-3">
-              <div className="bg-[#F7F8FA] p-2 rounded-lg border border-[#E4E7EC]">{c.icon}</div>
-              <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full ${c.up ? "bg-[#E7F6ED] text-[#15803D]" : "bg-[#FDECEA] text-[#C1382B]"}`}>
-                {c.up ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-                {c.badge}
-              </span>
+            <div className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 text-xs font-bold text-emerald-300 backdrop-blur-md">
+              <ShieldCheck size={16} className="text-emerald-400" />
+              <span>Vault Secure</span>
             </div>
-            <p className="text-[11px] text-[#98A2B3] font-semibold uppercase tracking-wide">{c.label}</p>
-            <p className="text-[22px] font-bold text-[#131720] mt-0.5 tracking-tight">{c.value}</p>
           </div>
-        ))}
+        </div>
       </div>
 
-      {/* ── Chart + Activity ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <div className="lg:col-span-2 bg-white rounded-xl p-4 border border-[#E4E7EC] shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
-            <div>
-              <h2 className="text-[13px] font-bold text-[#131720]">Daily Performance</h2>
-              <p className="text-[11px] text-[#98A2B3] mt-0.5">Revenue fluctuations over the period</p>
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          {
+            label: "Total Active Users",
+            value: Number(kpis.totalActiveUsers).toLocaleString(),
+            trend: "+14.2%",
+            badge: "Live",
+            up: true,
+            icon: Users,
+            iconBg: "bg-indigo-50 text-[#5B50E6]",
+            border: "border-indigo-100",
+          },
+          {
+            label: "Revenue MTD",
+            value: kpis.revenueMTD,
+            trend: "+28.6%",
+            badge: "All time",
+            up: true,
+            icon: Wallet,
+            iconBg: "bg-emerald-50 text-emerald-600",
+            border: "border-emerald-100",
+          },
+          {
+            label: "Completed Transactions",
+            value: Number(kpis.completedTransactions).toLocaleString(),
+            trend: "+8.4%",
+            badge: "Total",
+            up: true,
+            icon: ReceiptText,
+            iconBg: "bg-amber-50 text-amber-600",
+            border: "border-amber-100",
+          },
+          {
+            label: "Active Enrollments",
+            value: Number(kpis.totalEnrollments ?? 4180).toLocaleString(),
+            trend: "+19.1%",
+            badge: "Courses",
+            up: true,
+            icon: BookOpen,
+            iconBg: "bg-violet-50 text-violet-600",
+            border: "border-violet-100",
+          },
+        ].map((card, idx) => {
+          const Icon = card.icon;
+          return (
+            <div
+              key={idx}
+              className={`relative bg-white rounded-2xl p-5 border ${card.border} shadow-sm hover:shadow-md transition-all duration-300 group`}
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className={`p-3 rounded-2xl ${card.iconBg} transition-transform duration-300 group-hover:scale-110`}>
+                  <Icon size={20} />
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                    <TrendingUp size={11} />
+                    {card.trend}
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">
+                {card.label}
+              </p>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight mt-1">
+                {card.value}
+              </h3>
             </div>
-            <div className="flex gap-1 bg-[#F7F8FA] rounded-lg p-1 w-fit border border-[#E4E7EC]">
+          );
+        })}
+      </div>
+
+      {/* Performance Analytics & Activity Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Analytics Chart */}
+        <div className="lg:col-span-2 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-100">
+            <div>
+              <h2 className="text-base font-black text-slate-900">Platform Performance</h2>
+              <p className="text-xs text-slate-500 font-medium">
+                Revenue and engagement fluctuations over time
+              </p>
+            </div>
+
+            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 border border-slate-200/70 w-fit">
               {["Daily", "Weekly"].map((v) => (
                 <button
                   key={v}
                   onClick={() => handleChartView(v)}
-                  className={`text-[11px] font-semibold px-3 py-1 rounded-md transition-all ${chartView === v ? "bg-[#3B6FE0] text-white" : "text-[#667085] hover:text-[#344054]"}`}
+                  className={`text-xs font-extrabold px-3.5 py-1.5 rounded-xl transition-all ${
+                    chartView === v
+                      ? "bg-[#5B50E6] text-white shadow-sm"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
                 >
                   {v}
                 </button>
@@ -330,79 +480,114 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 sm:gap-4 mb-3 px-1 flex-wrap">
-            {stats.map((s, i, arr) => (
-              <React.Fragment key={s.label}>
-                <div>
-                  <p className="text-[10px] text-[#98A2B3] font-semibold uppercase tracking-wide">{s.label}</p>
-                  <p className="text-[15px] font-bold text-[#131720]">{s.value}</p>
-                </div>
-                {i < arr.length - 1 && <div className="w-px h-8 bg-[#E4E7EC] hidden sm:block" />}
-              </React.Fragment>
+          <div className="flex items-center gap-6 pt-1">
+            {stats.map((s) => (
+              <div key={s.label}>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                  {s.label}
+                </p>
+                <p className="text-base font-black text-slate-900">{s.value}</p>
+              </div>
             ))}
-            <div className="ml-auto flex items-center gap-1.5">
-              <span className="w-3 h-0.5 rounded-full bg-[#3B6FE0] inline-block" />
-              <span className="text-[10px] text-[#98A2B3] font-medium">Revenue</span>
+            <div className="ml-auto flex items-center gap-2">
+              <span className="w-3 h-1 rounded-full bg-[#5B50E6]" />
+              <span className="text-xs font-bold text-slate-500">Volume</span>
             </div>
           </div>
 
           <VaultChart key={chartKey} data={chartData} />
         </div>
 
-        {/* Recent Activity */}
-        <div className="bg-white rounded-xl p-4 border border-[#E4E7EC] shadow-sm">
-          <h2 className="text-[13px] font-bold text-[#131720] mb-3">Recent Activity</h2>
-          <div className="space-y-3">
-            {activities.map((act: any, i: number) => (
-              <div key={i} className="flex gap-3">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center border border-[#E4E7EC] bg-[#F7F8FA] text-[#3B6FE0]">
-                  {renderIcon(act.icon)}
+        {/* Recent System Activity */}
+        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex flex-col justify-between space-y-4">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <h2 className="text-base font-black text-slate-900">Recent Activity</h2>
+              <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full">
+                Live Feed
+              </span>
+            </div>
+
+            <div className="space-y-4">
+              {activities.map((act: any, idx: number) => (
+                <div key={idx} className="flex items-start gap-3.5 group">
+                  <div className="w-9 h-9 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[#5B50E6] shrink-0 group-hover:scale-105 transition-transform">
+                    {renderIcon(act.icon)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-slate-900 leading-tight">
+                      {act.title}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
+                      {act.desc}
+                    </p>
+                    <span className="inline-block text-[9px] font-black text-slate-400 uppercase tracking-wider mt-1.5 font-mono">
+                      {act.time}
+                    </span>
+                  </div>
                 </div>
-                <div className="pb-3 min-w-0">
-                  <p className="text-[12px] font-bold text-[#131720] leading-tight truncate">{act.title}</p>
-                  <p className="text-[11px] text-[#667085] mt-0.5 line-clamp-2">{act.desc}</p>
-                  <p className="text-[9px] font-bold text-[#98A2B3] mt-1 uppercase tracking-widest font-mono">{act.time}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-          <button className="w-full mt-3 border border-[#E4E7EC] text-[12px] text-[#3B6FE0] font-semibold py-2 rounded-lg hover:bg-[#F7F8FA] transition-colors flex items-center justify-center gap-1 active:scale-95">
-            View Full Log <ChevronRight size={13} />
+
+          <button className="w-full py-2.5 rounded-2xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 transition-colors flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer">
+            <span>View Complete Log</span>
+            <ArrowUpRight size={14} className="text-slate-400" />
           </button>
         </div>
       </div>
 
-      {/* ── Transactions Table ── */}
-      <div className="bg-white rounded-xl border border-[#E4E7EC] shadow-sm overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3.5 border-b border-[#E4E7EC]">
-          <h2 className="text-[13px] font-bold text-[#131720]">Recent High-Value Transactions</h2>
-          <div className="flex items-center gap-2 flex-wrap">
+      {/* High-Value Transactions Section */}
+      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden space-y-1">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6 pb-4 border-b border-slate-100">
+          <div>
+            <h2 className="text-base font-black text-slate-900">Recent High-Value Transactions</h2>
+            <p className="text-xs text-slate-500 font-medium">
+              Verified financial records and platform purchases
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap">
             <div className="relative flex-1 sm:flex-none">
-              <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search hash, user…"
+                placeholder="Search transaction, user..."
                 value={searchTx}
                 onChange={(e) => setSearchTx(e.target.value)}
-                className="pl-7 pr-3 py-1.5 text-[12px] bg-white border border-[#E4E7EC] rounded-lg text-[#131720] placeholder:text-[#98A2B3] focus:outline-none focus:ring-2 focus:ring-[#3B6FE0]/25 focus:border-[#3B6FE0] w-full sm:w-44 transition-all"
+                className="pl-9 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#5B50E6] focus:bg-white focus:ring-2 focus:ring-[#5B50E6]/10 w-full sm:w-52 transition-all"
               />
             </div>
 
             <div className="relative">
               <button
                 onClick={() => setFilterOpen(!filterOpen)}
-                className={`p-1.5 border rounded-lg transition-colors ${filterOpen || statusFilter !== "All" ? "border-[#A9791F] bg-[#FBF3E2] text-[#A9791F]" : "border-[#E4E7EC] hover:bg-[#F7F8FA] text-[#667085]"}`}
+                className={`p-2 border rounded-xl transition-all cursor-pointer ${
+                  filterOpen || statusFilter !== "All"
+                    ? "border-[#5B50E6] bg-indigo-50 text-[#5B50E6]"
+                    : "border-slate-200 hover:bg-slate-50 text-slate-600"
+                }`}
               >
                 <SlidersHorizontal size={14} />
               </button>
+
               {filterOpen && (
-                <div className="absolute right-0 top-full mt-1.5 bg-white border border-[#E4E7EC] rounded-xl shadow-lg p-2 z-10 min-w-[130px]">
-                  <p className="text-[10px] font-bold text-[#98A2B3] uppercase tracking-widest px-2 mb-1.5">Status</p>
+                <div className="absolute right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-20 min-w-[140px] animate-in fade-in zoom-in-95 duration-150">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider px-2 py-1">
+                    Filter Status
+                  </p>
                   {["All", "Success", "Failed"].map((s) => (
                     <button
                       key={s}
-                      onClick={() => { setStatusFilter(s); setFilterOpen(false); }}
-                      className={`w-full text-left px-2 py-1.5 text-[12px] font-medium rounded-lg transition-colors ${statusFilter === s ? "bg-[#F7F8FA] text-[#3B6FE0]" : "text-[#667085] hover:bg-[#F7F8FA]"}`}
+                      onClick={() => {
+                        setStatusFilter(s);
+                        setFilterOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-1.5 text-xs font-bold rounded-xl transition-colors cursor-pointer ${
+                        statusFilter === s
+                          ? "bg-[#5B50E6] text-white"
+                          : "text-slate-700 hover:bg-slate-50"
+                      }`}
                     >
                       {s}
                     </button>
@@ -411,46 +596,49 @@ export default function Dashboard() {
               )}
             </div>
 
-            <button className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold text-[#3B6FE0] border border-[#C7D7FE] bg-[#EFF4FF] rounded-lg hover:bg-[#E0EAFF] transition-colors active:scale-95">
-              <Download size={12} /> Export
+            <button className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-indigo-600 border border-indigo-200 bg-indigo-50/50 hover:bg-indigo-50 rounded-xl transition-colors active:scale-95 cursor-pointer">
+              <Download size={14} />
+              <span>Export CSV</span>
             </button>
           </div>
         </div>
 
-        <div className="p-4">
+        <div className="p-4 overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-[#E4E7EC] hover:bg-transparent">
-                <TableHead className="text-[#98A2B3]">Transaction ID</TableHead>
-                <TableHead className="text-[#98A2B3]">User</TableHead>
-                <TableHead className="text-[#98A2B3]">Product</TableHead>
-                <TableHead className="text-[#98A2B3]">Amount</TableHead>
-                <TableHead className="text-[#98A2B3]">Date</TableHead>
-                <TableHead className="text-[#98A2B3]">Status</TableHead>
+              <TableRow className="border-slate-100 hover:bg-transparent">
+                <TableHead className="text-xs font-black text-slate-400 uppercase tracking-wider">Transaction ID</TableHead>
+                <TableHead className="text-xs font-black text-slate-400 uppercase tracking-wider">User</TableHead>
+                <TableHead className="text-xs font-black text-slate-400 uppercase tracking-wider">Product</TableHead>
+                <TableHead className="text-xs font-black text-slate-400 uppercase tracking-wider">Amount</TableHead>
+                <TableHead className="text-xs font-black text-slate-400 uppercase tracking-wider">Date</TableHead>
+                <TableHead className="text-xs font-black text-slate-400 uppercase tracking-wider">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
-                <TableRow className="border-[#E4E7EC] hover:bg-transparent">
-                  <TableCell colSpan={6} className="h-24 text-center text-xs text-[#98A2B3] font-medium">
-                    No transactions match your search.
+                <TableRow className="border-slate-100 hover:bg-transparent">
+                  <TableCell colSpan={6} className="h-24 text-center text-xs font-semibold text-slate-400">
+                    No transactions found matching your criteria.
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((tx: any, i: number) => (
-                  <TableRow key={i} className="border-[#E4E7EC] hover:bg-[#F9FAFB]">
-                    <TableCell className="font-bold text-[#3B6FE0] font-mono">{tx.id}</TableCell>
+                filtered.map((tx: any, idx: number) => (
+                  <TableRow key={idx} className="border-slate-100 hover:bg-slate-50/70 transition-colors">
+                    <TableCell className="font-extrabold text-[#5B50E6] font-mono text-xs">
+                      {tx.id}
+                    </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-full bg-[#F7F8FA] border border-[#E4E7EC] text-[#344054] flex items-center justify-center text-xs font-black shrink-0">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200/80 text-slate-700 flex items-center justify-center text-xs font-black shrink-0">
                           {tx.initials}
                         </div>
-                        <span className="text-xs font-bold text-[#131720]">{tx.user}</span>
+                        <span className="text-xs font-bold text-slate-900">{tx.user}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-xs text-[#667085] font-medium">{tx.product}</TableCell>
-                    <TableCell className="text-xs font-extrabold text-[#131720] font-mono">{tx.amount}</TableCell>
-                    <TableCell className="text-xs text-[#98A2B3] font-medium font-mono">{tx.date}</TableCell>
+                    <TableCell className="text-xs font-medium text-slate-600">{tx.product}</TableCell>
+                    <TableCell className="text-xs font-black text-slate-900 font-mono">{tx.amount}</TableCell>
+                    <TableCell className="text-xs font-medium text-slate-400 font-mono">{tx.date}</TableCell>
                     <TableCell>
                       <StatusLed status={tx.status} />
                     </TableCell>

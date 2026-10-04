@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Home,
   LayoutDashboard,
@@ -14,38 +14,17 @@ import {
   ClipboardList,
   CreditCard,
   ShoppingBag,
-  BarChart,
+  BarChart2,
   LogOut,
   X,
-  ChevronDown,
+  ChevronRight,
   Sparkles,
-  PieChart,
   BookOpen,
   Search,
-  User,
-  Shield,
-  Briefcase,
-  UserPlus,
-  Wrench,
-  Package,
-  Globe,
-  Receipt,
-  Mail,
   Ticket,
-  MessageSquare,
-  Bot,
-  Truck,
+  ShieldCheck,
   Zap,
-  Coins,
-  Heart,
-  HelpCircle,
-  Building2,
-  Trash2,
-  PlusCircle,
-  MapPin,
-  UserCheck,
 } from "lucide-react";
-import { LiaCloudShowersHeavySolid } from "react-icons/lia";
 import { useLogoutMutation } from "@/lib/api/authApi";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/store/slices/authSlice";
@@ -54,18 +33,28 @@ import { toast } from "sonner";
 import type { RootState } from "@/store";
 import { motion, AnimatePresence } from "framer-motion";
 
-const navGroups = [
+interface NavItem {
+  label: string;
+  href: string;
+  icon: React.ElementType;
+  badge?: string;
+}
+
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
   {
     label: "Overview",
-    icon: PieChart,
     items: [
       { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-      { label: "Enrollments", href: "/admin/enrollments", icon: ClipboardList },
+      { label: "Enrollments", href: "/admin/enrollments", icon: ClipboardList, badge: "Live" },
     ],
   },
   {
     label: "People",
-    icon: Users,
     items: [
       { label: "Users", href: "/admin/users", icon: Users },
       { label: "Instructors", href: "/admin/instructor", icon: GraduationCap },
@@ -73,43 +62,37 @@ const navGroups = [
   },
   {
     label: "Finance",
-    icon: Wallet,
     items: [
       { label: "Wallet", href: "/admin/wallet", icon: Wallet },
-      {
-        label: "Payment Methods",
-        href: "/admin/paymentMethods",
-        icon: CreditCard,
-      },
+      { label: "Payment Methods", href: "/admin/paymentMethods", icon: CreditCard },
       { label: "Withdrawals", href: "/admin/withdraw", icon: Banknote },
     ],
   },
   {
     label: "Content",
-    icon: BookOpen,
     items: [
       { label: "Products", href: "/admin/products", icon: ShoppingBag },
       { label: "Shop", href: "/admin/shop", icon: ShoppingBag },
       { label: "Category", href: "/admin/category", icon: Layers },
-      {
-        label: "Courses",
-        href: "/admin/courses",
-        icon: LiaCloudShowersHeavySolid,
-      },
+      { label: "Courses", href: "/admin/courses", icon: BookOpen },
       { label: "Coupons", href: "/admin/coupons", icon: Ticket },
-      { label: "Percentage", href: "/admin/percentage", icon: BarChart },
+      { label: "Percentage", href: "/admin/percentage", icon: BarChart2 },
     ],
   },
 ];
 
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
-  const router = useRouter();
   const dispatch = useDispatch();
   const [logoutApi, { isLoading: isLoggingOut }] = useLogoutMutation();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [openGroups, setOpenGroups] = useState<string[]>(["Overview"]);
+  const [openGroups, setOpenGroups] = useState<string[]>([
+    "Overview",
+    "People",
+    "Finance",
+    "Content",
+  ]);
 
   const authUser = useSelector((state: RootState) => state.auth.user);
 
@@ -118,7 +101,6 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
       authUser?.name ?? authUser?.fullName ?? authUser?.username ?? "",
     ).trim() || "Admin";
   const email = String(authUser?.email ?? "").trim();
-  const country = String(authUser?.country ?? "").trim();
 
   const avatarUrlRaw =
     authUser?.photo ??
@@ -131,6 +113,13 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
       ? avatarUrlRaw.trim()
       : null;
 
+  const initials = displayName
+    .split(" ")
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
   const handleLogout = async () => {
     try {
       onClose?.();
@@ -142,7 +131,6 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
     window.location.href = "/login";
   };
 
-  // Multi-word search matching
   const isSearchMatch = (text: string, query: string) => {
     if (!query.trim()) return true;
     const cleanText = text.toLowerCase();
@@ -150,7 +138,6 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
     return queryTokens.every((token) => cleanText.includes(token));
   };
 
-  // Filter menu items by search query
   const filteredNavGroups = useMemo(() => {
     if (!searchQuery.trim()) return navGroups;
 
@@ -169,111 +156,104 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         }
         return null;
       })
-      .filter((g): g is typeof navGroups[0] => g !== null);
+      .filter((g): g is NavGroup => g !== null);
   }, [searchQuery]);
 
-  // Keep active group open without closing previously opened groups
   useEffect(() => {
-    if (searchQuery.trim()) {
-      const matched = navGroups.find(
-        (g) =>
-          isSearchMatch(g.label, searchQuery) ||
-          g.items.some(
-            (i) =>
-              isSearchMatch(i.label, searchQuery) ||
-              isSearchMatch(i.href, searchQuery),
-          ),
-      );
-      if (matched && !openGroups.includes(matched.label)) {
-        setOpenGroups((prev) => [...prev, matched.label]);
-      }
-    } else {
-      const activeGroup = navGroups.find((g) =>
-        g.items.some(
-          (item) =>
-            pathname === item.href || pathname?.startsWith(item.href + "/"),
-        ),
-      );
-      if (activeGroup && !openGroups.includes(activeGroup.label)) {
-        setOpenGroups((prev) => [...prev, activeGroup.label]);
-      }
+    const activeGroup = navGroups.find((g) =>
+      g.items.some(
+        (item) =>
+          pathname === item.href || pathname?.startsWith(item.href + "/"),
+      ),
+    );
+    if (activeGroup && !openGroups.includes(activeGroup.label)) {
+      setOpenGroups((prev) => [...prev, activeGroup.label]);
     }
-  }, [pathname, searchQuery]);
+  }, [pathname]);
 
   return (
-    <aside
-      className="
-        relative z-50 flex h-full w-[260px] flex-col
-        border-r-[2px] border-[#5B50E6]/15 bg-slate-50/40 shadow-[6px_0_24px_rgba(0,0,0,0.015)]
-      "
-    >
-      {/* ─── BRAND LOGO & SUPER ADMIN BADGE HEADER ─── */}
-      <div className="p-5 pb-3 flex flex-col items-start gap-2.5 relative z-10 border-b border-slate-100/80">
+    <aside className="relative z-50 flex h-full w-[260px] flex-col border-r border-slate-200/80 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+      {/* Brand & Badge Header */}
+      <div className="p-4 pb-3 flex flex-col items-start gap-2.5 border-b border-slate-100">
         <div className="flex items-center justify-between w-full">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="relative text-[#5B50E6] group-hover:scale-110 transition-transform duration-300">
-              <GraduationCap className="w-8 h-8 text-[#5B50E6] stroke-[2.2]" />
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#5B50E6] to-indigo-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-300">
+              <GraduationCap className="w-5 h-5" />
             </div>
-            <span className="text-2xl font-bold tracking-tight text-[#111827]">
-              Edu<span className="text-[#5B50E6]">Nova</span>
-            </span>
+            <div className="flex flex-col">
+              <span className="text-lg font-black tracking-tight text-slate-900 leading-none">
+                Edu<span className="text-[#5B50E6]">Nova</span>
+              </span>
+              <span className="text-[10px] font-bold text-slate-400 tracking-wider">
+                Admin Console
+              </span>
+            </div>
           </Link>
 
-          {/* Close button – mobile only */}
           {onClose && (
             <button
               onClick={onClose}
-              className="flex cursor-pointer items-center justify-center rounded-xl bg-slate-100 p-1.5 text-slate-400 transition-all hover:bg-slate-200 hover:text-slate-600 lg:hidden"
+              className="flex cursor-pointer items-center justify-center rounded-xl bg-slate-100 p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700 lg:hidden transition-colors"
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           )}
         </div>
 
-        {/* Super Admin Badge Pill */}
-        <div className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-50/80 border border-[#5B50E6]/30 shadow-2xs">
-          <span className="text-[10px] font-black text-[#5B50E6] tracking-widest uppercase">
+        <div className="flex items-center gap-2 w-full pt-1">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-[10px] font-extrabold text-[#5B50E6] tracking-wider uppercase">
+            <ShieldCheck size={12} className="text-[#5B50E6]" />
             SUPER ADMIN
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-50 text-[10px] font-bold text-emerald-600 border border-emerald-100 ml-auto">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            v2.4
           </span>
         </div>
       </div>
 
-      {/* ─── SEARCH MENU BAR ─── */}
-      <div className="px-4 pt-4 pb-2 relative z-10">
-        <div className="relative">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            size={16}
-          />
+      {/* Search Input */}
+      <div className="px-3 pt-3 pb-1">
+        <div className="relative flex items-center">
+          <Search className="absolute left-3 text-slate-400 w-4 h-4 pointer-events-none" />
           <input
             type="text"
             placeholder="Search menu..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white border border-slate-200/80 rounded-2xl py-2.5 pl-10 pr-4 text-xs font-bold text-slate-700 placeholder:text-slate-400/80 outline-none focus:border-[#5B50E6] focus:ring-4 focus:ring-[#5B50E6]/10 transition-all shadow-sm focus:shadow-[0_0_20px_-3px_rgba(91,80,230,0.15)]"
+            className="w-full bg-slate-50 border border-slate-200/80 rounded-xl py-2 pl-9 pr-3 text-xs font-semibold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#5B50E6] focus:bg-white focus:ring-2 focus:ring-[#5B50E6]/10 transition-all"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2 text-slate-400 hover:text-slate-600 p-0.5"
+            >
+              <X size={12} />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* ─── ACCORDION TREE NAVIGATION MENU ─── */}
-      <nav className="flex-1 px-4 py-2 space-y-2 overflow-y-auto custom-sidebar-scrollbar relative z-10">
-        {/* 1. Home Page Item */}
-        <Link
-          href="/"
-          onClick={onClose}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group border border-transparent text-slate-600 hover:bg-[#5B50E6]/5 hover:text-[#5B50E6] hover:translate-x-1 font-semibold text-[14px]"
-        >
-          <Home size={18} className="text-slate-400 group-hover:text-[#5B50E6] transition-colors" />
-          <span>Home Page</span>
-        </Link>
-        {filteredNavGroups.map((group, index) => {
-          const isExpanded = openGroups.includes(group.label);
-          const containsActive = group.items.some(
-            (item) =>
-              pathname === item.href || pathname?.startsWith(item.href + "/"),
-          );
+      {/* Navigation Groups */}
+      <nav className="flex-1 px-3 py-2 space-y-4 overflow-y-auto custom-sidebar-scrollbar">
+        {/* Main Website Quick Link */}
+        <div>
+          <Link
+            href="/"
+            onClick={onClose}
+            className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all duration-200 group"
+          >
+            <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-[#5B50E6]/10 group-hover:text-[#5B50E6] transition-colors">
+              <Home size={15} />
+            </div>
+            <span>Main Website</span>
+            <ChevronRight size={14} className="ml-auto text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all" />
+          </Link>
+        </div>
 
-          const handleToggle = () => {
+        {filteredNavGroups.map((group) => {
+          const isExpanded = openGroups.includes(group.label);
+          const toggleGroup = () => {
             setOpenGroups((prev) =>
               prev.includes(group.label)
                 ? prev.filter((g) => g !== group.label)
@@ -282,95 +262,64 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
           };
 
           return (
-            <div key={index} className="space-y-1">
-              {/* Group Header Button */}
+            <div key={group.label} className="space-y-1">
               <button
-                onClick={handleToggle}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group border relative ${
-                  containsActive
-                    ? isExpanded
-                      ? "bg-[#5B50E6]/5 border-[#5B50E6]/15 text-[#5B50E6] font-extrabold shadow-sm"
-                      : "bg-gradient-to-r from-[#5B50E6] to-[#4D42DB] text-white font-extrabold shadow-md shadow-[#5B50E6]/20 scale-[1.01] border-transparent"
-                    : "border-transparent text-slate-600 hover:bg-[#5B50E6]/5 hover:text-[#5B50E6] hover:translate-x-1 font-semibold"
-                }`}
+                onClick={toggleGroup}
+                className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-black tracking-widest text-slate-400 uppercase hover:text-slate-600 transition-colors"
               >
-                {containsActive && isExpanded && (
-                  <div className="absolute left-1.5 w-1 h-5 bg-[#5B50E6] rounded-full" />
-                )}
-                {containsActive && !isExpanded && (
-                  <div className="absolute left-1.5 w-1 h-5 bg-white rounded-full" />
-                )}
-                <div className="flex items-center gap-3">
-                  <group.icon
-                    size={18}
-                    className={
-                      containsActive
-                        ? isExpanded
-                          ? "text-[#5B50E6]"
-                          : "text-white"
-                        : "text-slate-400 group-hover:text-slate-600 transition-colors"
-                    }
-                  />
-                  <span className="text-[14px]">{group.label}</span>
-                </div>
-                <ChevronDown
-                  size={14}
+                <span>{group.label}</span>
+                <ChevronRight
+                  size={12}
                   className={`transition-transform duration-200 ${
-                    containsActive
-                      ? isExpanded
-                        ? "text-[#5B50E6]/70"
-                        : "text-white/70"
-                      : "text-slate-400"
-                  } ${isExpanded ? "rotate-180" : ""}`}
+                    isExpanded ? "rotate-90" : ""
+                  }`}
                 />
               </button>
 
-              {/* Collapsible Sub-menu Tree */}
               <AnimatePresence initial={false}>
                 {isExpanded && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.22, ease: "easeInOut" }}
-                    className="relative pl-6 space-y-1 overflow-hidden"
+                    transition={{ duration: 0.18, ease: "easeInOut" }}
+                    className="space-y-0.5 overflow-hidden"
                   >
-                    {/* Trunk Line */}
-                    <div className="absolute left-[27px] top-0 bottom-4 w-[1.5px] bg-[#5B50E6]/25" />
-
-                    {group.items.map((item, cIdx) => {
-                      const isChildActive =
+                    {group.items.map((item) => {
+                      const isActive =
                         pathname === item.href ||
                         pathname?.startsWith(item.href + "/");
-                      const ItemIcon = item.icon;
+                      const Icon = item.icon;
 
                       return (
                         <Link
-                          key={cIdx}
+                          key={item.href}
                           href={item.href}
                           onClick={onClose}
-                          className={`flex items-center gap-2.5 pl-9 pr-3 py-2.5 rounded-xl text-[13px] font-bold transition-all relative group border ${
-                            isChildActive
-                              ? "bg-gradient-to-r from-[#5B50E6] to-[#4D42DB] text-white shadow-md shadow-[#5B50E6]/15 border-transparent scale-[1.01]"
-                              : "border-transparent text-slate-600 hover:bg-[#5B50E6]/5 hover:text-[#5B50E6] hover:translate-x-1.5"
+                          className={`relative flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-200 group ${
+                            isActive
+                              ? "bg-gradient-to-r from-[#5B50E6] to-indigo-600 text-white shadow-md shadow-indigo-500/20"
+                              : "text-slate-600 hover:bg-indigo-50/60 hover:text-[#5B50E6]"
                           }`}
                         >
-                          {/* Branch Connector Hook */}
-                          <div className="absolute left-[27px] top-0 w-3.5 h-[20px] border-l-[1.5px] border-b-[1.5px] border-[#5B50E6]/30 rounded-bl-lg pointer-events-none" />
-
-                          {isChildActive && (
-                            <div className="absolute left-[25px] top-[14px] w-1.5 h-1.5 bg-white rounded-full ring-2 ring-[#5B50E6] z-10" />
-                          )}
-
-                          <ItemIcon
+                          <Icon
                             size={16}
-                            className={
-                              isChildActive
-                                ? "text-white shrink-0"
-                                : "text-slate-400 group-hover:text-slate-600 transition-colors shrink-0"
-                            }
+                            className={`shrink-0 transition-transform duration-200 group-hover:scale-110 ${
+                              isActive ? "text-white" : "text-slate-400 group-hover:text-[#5B50E6]"
+                            }`}
                           />
                           <span className="truncate">{item.label}</span>
+                          {item.badge && (
+                            <span
+                              className={`ml-auto text-[9px] font-black px-1.5 py-0.5 rounded-full ${
+                                isActive
+                                  ? "bg-white/20 text-white"
+                                  : "bg-emerald-100 text-emerald-700"
+                              }`}
+                            >
+                              {item.badge}
+                            </span>
+                          )}
                         </Link>
                       );
                     })}
@@ -382,26 +331,38 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         })}
       </nav>
 
-      {/* ─── BOTTOM LOGOUT & VERSION CONTROLS ─── */}
-      <div className="p-3 border-t border-slate-100 bg-gradient-to-b from-white/40 to-slate-50/60 relative z-10 space-y-1.5">
+      {/* User Profile Strip & Sign Out */}
+      <div className="p-3 border-t border-slate-100 bg-slate-50/60 space-y-2">
+        <div className="flex items-center gap-3 px-2 py-1.5 rounded-xl bg-white border border-slate-200/70 shadow-2xs">
+          <div className="w-8 h-8 rounded-lg overflow-hidden bg-indigo-500 flex items-center justify-center text-white text-xs font-black shrink-0">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={displayName}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              initials
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold text-slate-800 truncate leading-tight">
+              {displayName}
+            </p>
+            <p className="text-[10px] font-semibold text-slate-400 truncate">
+              {email || "Administrator"}
+            </p>
+          </div>
+        </div>
+
         <button
           onClick={handleLogout}
           disabled={isLoggingOut}
-          className="flex items-center gap-3 px-3.5 py-2.5 text-slate-600 hover:text-rose-600 w-full rounded-2xl bg-white border border-slate-200/70 hover:border-rose-200 hover:bg-rose-50/50 transition-all duration-200 shadow-xs cursor-pointer group disabled:opacity-50"
+          className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs transition-colors cursor-pointer disabled:opacity-50"
         >
-          <div className="p-1.5 rounded-xl bg-slate-100 group-hover:bg-rose-100/80 text-slate-500 group-hover:text-rose-600 transition-colors shrink-0">
-            <LogOut size={16} />
-          </div>
-          <span className="text-xs font-black text-slate-700 group-hover:text-rose-600 transition-colors">
-            {isLoggingOut ? "Signing Out..." : "Sign Out"}
-          </span>
+          <LogOut size={14} />
+          <span>{isLoggingOut ? "Signing out..." : "Sign Out"}</span>
         </button>
-
-        <div className="mt-1 text-center">
-          <span className="text-[10px] font-bold tracking-wider text-slate-300 uppercase">
-            ADMIN PANEL · V2.0
-          </span>
-        </div>
       </div>
     </aside>
   );
