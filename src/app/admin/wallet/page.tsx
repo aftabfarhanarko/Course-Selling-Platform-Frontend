@@ -11,6 +11,9 @@ import {
   X,
   Sparkles,
   TrendingUp,
+  ShieldCheck,
+  RefreshCw,
+  ArrowUpRight,
 } from "lucide-react";
 import { useAdminWalletsQuery } from "@/lib/api/admin/wallet";
 
@@ -79,7 +82,7 @@ function Avatar({ name, src }: { name: string; src?: string }) {
       <img
         src={src}
         alt={name}
-        className="w-9 h-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white shadow-sm"
+        className="w-9 h-9 rounded-xl object-cover flex-shrink-0 ring-2 ring-slate-100 shadow-xs"
       />
     );
   }
@@ -89,16 +92,16 @@ function Avatar({ name, src }: { name: string; src?: string }) {
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("");
   const colors = [
-    "bg-violet-100 text-violet-700",
-    "bg-blue-100 text-blue-700",
-    "bg-emerald-100 text-emerald-700",
-    "bg-pink-100 text-pink-700",
-    "bg-amber-100 text-amber-700",
+    "bg-indigo-500 text-white",
+    "bg-emerald-500 text-white",
+    "bg-violet-500 text-white",
+    "bg-amber-500 text-white",
+    "bg-purple-500 text-white",
   ];
   const idx = name.charCodeAt(0) % colors.length;
   return (
     <div
-      className={`w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-extrabold flex-shrink-0 ring-2 ring-white shadow-sm ${colors[idx]}`}
+      className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-black flex-shrink-0 shadow-xs ${colors[idx]}`}
     >
       {initials || "?"}
     </div>
@@ -109,7 +112,7 @@ export default function AdminWalletPage(): React.JSX.Element {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
-  const { data, isLoading, isError } = useAdminWalletsQuery({
+  const { data, isLoading, isError, refetch } = useAdminWalletsQuery({
     search,
     page,
     limit: PAGE_SIZE,
@@ -131,135 +134,130 @@ export default function AdminWalletPage(): React.JSX.Element {
     .reduce((acc, curr) => acc + Number(curr.balance), 0)
     .toFixed(2);
 
-  // Shared pagination controls to avoid duplication
   const pagination = (
-    <div className="px-4 py-3.5 border-t border-gray-100 flex items-center justify-between gap-3 flex-wrap">
-      <p className="text-[11px] text-gray-400 font-semibold">
+    <div className="px-5 py-4 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap bg-slate-50/50">
+      <p className="text-xs font-semibold text-slate-500">
         Showing{" "}
-        <span className="text-gray-700">
+        <span className="font-bold text-slate-900">
           {list.length > 0 ? (page - 1) * PAGE_SIZE + 1 : 0}–
           {Math.min(page * PAGE_SIZE, total ?? list.length)}
         </span>{" "}
-        of <span className="text-gray-700">{total ?? list.length}</span>
+        of <span className="font-bold text-slate-900">{total ?? list.length}</span>
       </p>
       <div className="flex items-center gap-2">
         <button
           onClick={() => setPage((p) => Math.max(1, p - 1))}
           disabled={page <= 1}
-          className="h-8 w-8 rounded-xl border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+          className="h-9 px-3 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-2xs cursor-pointer"
         >
-          <ChevronLeft size={15} />
+          <ChevronLeft size={16} /> Prev
         </button>
-        <span className="text-[12px] font-bold text-gray-600 px-1">
+        <span className="text-xs font-extrabold text-slate-700 px-2">
           {page} / {totalPages}
         </span>
         <button
           onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
           disabled={page >= totalPages}
-          className="h-8 w-8 rounded-xl border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+          className="h-9 px-3 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-2xs cursor-pointer"
         >
-          <ChevronRight size={15} />
+          Next <ChevronRight size={16} />
         </button>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-white p-3 sm:p-4 lg:p-6 space-y-4">
-      {/* ── Premium Header (already responsive) ── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-violet-700 to-indigo-800 px-5 py-5 sm:px-7 sm:py-6 shadow-lg shadow-violet-200">
-        <div className="pointer-events-none absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/10 blur-2xl" />
-        <div className="pointer-events-none absolute bottom-0 left-1/3 w-24 h-24 rounded-full bg-indigo-400/20 blur-xl" />
+    <div className="min-h-screen bg-slate-50/70 p-4 sm:p-6 text-slate-900 space-y-6">
+      {/* Executive Hero Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-8 text-white shadow-xl shadow-indigo-950/10 border border-slate-800">
+        <div className="absolute top-0 right-0 -mt-12 -mr-12 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl border border-white/20 flex items-center justify-center flex-shrink-0 shadow-inner">
-              <Wallet size={20} className="text-white" />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md flex items-center justify-center text-white shadow-lg">
+              <Wallet size={24} />
             </div>
             <div>
-              <div className="flex items-center gap-2 mb-0.5">
-                <h1 className="text-[18px] sm:text-[22px] font-extrabold text-white tracking-tight leading-none">
-                  Wallets
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white leading-tight">
+                  User Wallets
                 </h1>
-                <span className="hidden sm:inline-flex items-center gap-1 bg-white/15 border border-white/20 text-white/90 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  <Sparkles size={9} /> Premium
+                <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                  Live Balances
                 </span>
               </div>
-              <p className="text-[12px] text-violet-200 font-medium">
-                Manage user wallets and balances.
+              <p className="text-sm text-slate-300 font-medium mt-1">
+                Monitor user wallet balances, credits, and account histories.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-full px-3 py-1.5 w-fit">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_0_3px_rgba(52,211,153,.3)] animate-pulse" />
-            <span className="text-[11px] font-bold text-white/90 tracking-wide">
-              Live
-            </span>
-          </div>
+          <button
+            onClick={() => refetch()}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 text-xs font-bold text-white transition-all active:scale-95 cursor-pointer self-start md:self-auto"
+          >
+            <RefreshCw size={14} />
+            <span>Refresh Wallets</span>
+          </button>
         </div>
       </div>
 
-      {/* ── Premium Stats Cards (already responsive) ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="relative overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm px-5 py-4 flex items-center gap-4 group hover:shadow-md transition-shadow">
-          <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl bg-gradient-to-b from-emerald-400 to-emerald-600" />
-          <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0">
-            <Wallet size={18} className="text-emerald-600" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center justify-between gap-2 mb-0.5">
-              <p className="text-[10.5px] font-bold uppercase tracking-widest text-gray-400">
-                Total Balance
-              </p>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded-full">
-                <TrendingUp size={9} /> Active
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">
+                Total Wallet Balance
+              </span>
+              <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                <TrendingUp size={10} /> Active
               </span>
             </div>
-            <p className="text-[26px] sm:text-[28px] font-black text-gray-900 leading-none tracking-tight">
+            <h3 className="text-3xl font-black text-slate-900 tracking-tight font-mono">
               ৳
               {Number(totalBalance).toLocaleString("en-US", {
                 minimumFractionDigits: 2,
               })}
-            </p>
+            </h3>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+            <Wallet size={22} />
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm px-5 py-4 flex items-center gap-4 group hover:shadow-md transition-shadow">
-          <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl bg-gradient-to-b from-violet-400 to-violet-600" />
-          <div className="w-11 h-11 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center flex-shrink-0">
-            <Users size={18} className="text-violet-600" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center justify-between gap-2 mb-0.5">
-              <p className="text-[10.5px] font-bold uppercase tracking-widest text-gray-400">
-                Total Wallets
-              </p>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-violet-600 bg-violet-50 border border-violet-100 px-1.5 py-0.5 rounded-full">
-                <Users size={9} /> Users
+        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">
+                Total Active Wallets
+              </span>
+              <span className="inline-flex items-center gap-1 text-[10px] font-black text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
+                <Users size={10} /> Users
               </span>
             </div>
-            <p className="text-[26px] sm:text-[28px] font-black text-gray-900 leading-none tracking-tight">
+            <h3 className="text-3xl font-black text-slate-900 tracking-tight">
               {totalCount.toLocaleString()}
-            </p>
+            </h3>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-[#5B50E6] border border-indigo-100 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+            <Users size={22} />
           </div>
         </div>
       </div>
 
-      {/* ── Premium Search Bar (already responsive) ── */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 sm:p-4">
-        <div className="relative flex items-center gap-3">
-          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-violet-50 border border-violet-100 flex items-center justify-center pointer-events-none">
-            <Search size={13} className="text-violet-500" />
-          </div>
+      {/* Search Input Bar */}
+      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-4">
+        <div className="relative flex items-center">
+          <Search size={16} className="absolute left-3.5 text-slate-400" />
           <input
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(1);
             }}
-            placeholder="Search by user name or email…"
-            className="w-full pl-12 pr-10 py-2.5 text-[13px] font-semibold text-gray-700 placeholder:text-gray-400 placeholder:font-normal outline-none bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all"
+            placeholder="Search by user name or email..."
+            className="w-full pl-10 pr-10 py-2.5 text-xs font-semibold text-slate-800 placeholder:text-slate-400 outline-none bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#5B50E6] focus:ring-2 focus:ring-[#5B50E6]/10 transition-all"
           />
           {search && (
             <button
@@ -267,94 +265,84 @@ export default function AdminWalletPage(): React.JSX.Element {
                 setSearch("");
                 setPage(1);
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
+              className="absolute right-3.5 text-slate-400 hover:text-slate-600 p-0.5"
             >
-              <X size={12} />
+              <X size={14} />
             </button>
           )}
         </div>
       </div>
 
-      {/* ── Desktop Table ── */}
-      <div className="hidden md:block bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/70">
-                {["User", "Balance", "Created At"].map((h) => (
-                  <th
-                    key={h}
-                    className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-4 py-3 whitespace-nowrap"
-                  >
-                    {h}
-                  </th>
-                ))}
+              <tr className="border-b border-slate-100 bg-slate-50/70">
+                <th className="text-[10px] font-black text-slate-400 uppercase tracking-wider px-6 py-3.5">
+                  User
+                </th>
+                <th className="text-[10px] font-black text-slate-400 uppercase tracking-wider px-6 py-3.5">
+                  Current Balance
+                </th>
+                <th className="text-[10px] font-black text-slate-400 uppercase tracking-wider px-6 py-3.5">
+                  Created Date
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td
-                    colSpan={3}
-                    className="px-4 py-10 text-center text-[12px] text-gray-500 font-semibold"
-                  >
-                    <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2 text-violet-500" />
-                    Loading...
+                  <td colSpan={3} className="px-6 py-12 text-center text-xs font-semibold text-slate-400">
+                    <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2 text-[#5B50E6]" />
+                    Loading wallet records...
                   </td>
                 </tr>
               ) : isError ? (
                 <tr>
-                  <td
-                    colSpan={3}
-                    className="px-4 py-10 text-center text-[12px] text-red-500 font-semibold"
-                  >
+                  <td colSpan={3} className="px-6 py-12 text-center text-xs font-semibold text-rose-600">
                     Failed to load wallets
                   </td>
                 </tr>
               ) : list.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-4 py-14 text-center">
+                  <td colSpan={3} className="px-6 py-14 text-center">
                     <div className="flex flex-col items-center gap-2">
-                      <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center">
-                        <Wallet size={20} className="text-gray-400" />
+                      <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center">
+                        <Wallet size={18} className="text-slate-400" />
                       </div>
-                      <p className="text-[12px] text-gray-400 font-semibold">
-                        No wallets found.
+                      <p className="text-xs font-semibold text-slate-400">
+                        No wallets found matching your search.
                       </p>
                     </div>
                   </td>
                 </tr>
               ) : (
                 list.map((m) => (
-                  <tr
-                    key={String(m.id)}
-                    className="hover:bg-violet-50/20 transition-colors group"
-                  >
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="flex items-center gap-2.5">
+                  <tr key={String(m.id)} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
                         <Avatar name={m.user.name} src={m.user.photo} />
                         <div>
-                          <p className="text-[13px] font-bold text-gray-900 leading-none mb-1">
+                          <p className="text-xs font-bold text-slate-900 leading-tight">
                             {m.user.name}
                           </p>
-                          <p className="text-[10px] text-gray-400">
+                          <p className="text-[11px] text-slate-500 mt-0.5">
                             {m.user.email}
                           </p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1 text-[13px] font-extrabold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-lg">
+                    <td className="px-6 py-4 whitespace-nowrap font-mono">
+                      <span className="inline-flex items-center gap-1 text-xs font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
                         ৳
                         {Number(m.balance).toLocaleString("en-US", {
                           minimumFractionDigits: 2,
                         })}
                       </span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <p className="text-[11px] font-semibold text-gray-400">
-                        {m.createdAt}
-                      </p>
+                    <td className="px-6 py-4 whitespace-nowrap text-xs font-semibold text-slate-500 font-mono">
+                      {m.createdAt}
                     </td>
                   </tr>
                 ))
@@ -365,66 +353,53 @@ export default function AdminWalletPage(): React.JSX.Element {
         {pagination}
       </div>
 
-      {/* ── Mobile Cards ── */}
+      {/* Mobile View Cards */}
       <div className="md:hidden space-y-3">
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="h-5 w-5 animate-spin text-violet-500" />
+            <Loader2 className="h-5 w-5 animate-spin text-[#5B50E6]" />
           </div>
         ) : isError ? (
-          <div className="text-center py-12 text-red-500 font-semibold">
+          <div className="text-center py-12 text-rose-600 font-bold text-xs">
             Failed to load wallets
           </div>
         ) : list.length === 0 ? (
           <div className="flex flex-col items-center py-12 gap-2">
-            <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center">
-              <Wallet size={20} className="text-gray-400" />
+            <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center">
+              <Wallet size={18} className="text-slate-400" />
             </div>
-            <p className="text-gray-400 font-semibold">No wallets found.</p>
+            <p className="text-slate-400 font-semibold text-xs">No wallets found.</p>
           </div>
         ) : (
           list.map((m) => (
-            <div
-              key={String(m.id)}
-              className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm space-y-3"
-            >
+            <div key={String(m.id)} className="bg-white rounded-2xl border border-slate-200/80 p-4 space-y-3 shadow-sm">
               <div className="flex items-center gap-3">
                 <Avatar name={m.user.name} src={m.user.photo} />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[14px] font-bold text-gray-900 truncate">
+                  <p className="text-xs font-bold text-slate-900 truncate">
                     {m.user.name}
                   </p>
-                  <p className="text-[11px] text-gray-400 truncate">
+                  <p className="text-[11px] text-slate-500 truncate">
                     {m.user.email}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+              <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
                   Balance
                 </span>
-                <span className="inline-flex items-center gap-1 text-[15px] font-extrabold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-lg">
+                <span className="inline-flex items-center gap-1 text-xs font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full font-mono">
                   ৳
                   {Number(m.balance).toLocaleString("en-US", {
                     minimumFractionDigits: 2,
                   })}
                 </span>
               </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                  Created
-                </span>
-                <span className="text-[11px] font-semibold text-gray-500">
-                  {m.createdAt}
-                </span>
-              </div>
             </div>
           ))
         )}
 
-        {/* Mobile pagination */}
         {list.length > 0 && <div className="mt-4">{pagination}</div>}
       </div>
     </div>
