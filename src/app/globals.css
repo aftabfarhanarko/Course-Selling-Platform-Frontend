@@ -44,3 +44,23 @@
     color: var(--foreground);
   }
 }
+
+/* Custom ultra-thin sleek scrollbar for sidebars */
+.custom-sidebar-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 102, 241, 0.25) transparent;
+}
+.custom-sidebar-scrollbar::-webkit-scrollbar {
+  width: 3.5px;
+  height: 3.5px;
+}
+.custom-sidebar-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.25);
+  border-radius: 9999px;
+}
+.custom-sidebar-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.5);
+}

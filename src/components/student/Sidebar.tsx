@@ -15,7 +15,6 @@ import {
   ChevronRight,
   Sparkles,
   Home,
-  BookOpen,
 } from "lucide-react";
 import Image from "next/image";
 import { useLogoutMutation } from "@/lib/api/authApi";
@@ -24,7 +23,6 @@ import { logout } from "@/store/slices/authSlice";
 import { baseApi } from "@/lib/api/baseApi";
 import { toast } from "sonner";
 import type { RootState } from "@/store";
-import { useState } from "react";
 
 const navGroups = [
   {
@@ -86,9 +84,9 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   };
 
   return (
-    <aside className="relative z-50 flex h-full w-[240px] flex-col border-r border-slate-200/80 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+    <aside className="relative z-50 flex h-full w-[240px] flex-col border-r border-slate-200/80 bg-white shadow-[6px_0_30px_rgba(0,0,0,0.015)]">
       {/* Top Header & Brand Logo */}
-      <div className="p-4 pb-3 flex flex-col items-start gap-2 border-b border-slate-100">
+      <div className="p-4 pb-3 flex flex-col items-start gap-2 border-b border-slate-100 bg-gradient-to-b from-slate-50/60 to-white">
         <div className="flex items-center justify-between w-full">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
@@ -154,8 +152,17 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         </div>
       </div>
 
-      {/* Navigation Groups */}
-      <nav className="flex-1 px-3 space-y-4 overflow-y-auto custom-sidebar-scrollbar pt-1">
+      {/* Navigation Groups with Ultra-Thin Custom Scrollbar */}
+      <nav
+        className="flex-1 px-3 space-y-4 overflow-y-auto custom-sidebar-scrollbar pt-1
+          [scrollbar-width:thin] [scrollbar-color:rgba(59,130,246,0.25)_transparent]
+          [&::-webkit-scrollbar]:w-[3.5px]
+          [&::-webkit-scrollbar-track]:bg-transparent
+          [&::-webkit-scrollbar-thumb]:rounded-full
+          [&::-webkit-scrollbar-thumb]:bg-blue-500/25
+          hover:[&::-webkit-scrollbar-thumb]:bg-blue-500/50
+        "
+      >
         {/* Main Website Link */}
         <div>
           <Link
@@ -192,10 +199,14 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
                     onClick={onClose}
                     className={`relative flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-200 group ${
                       isActive
-                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20"
-                        : "text-slate-600 hover:bg-blue-50/60 hover:text-blue-600"
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_4px_16px_rgba(37,99,235,0.3)]"
+                        : "text-slate-600 hover:bg-blue-50/70 hover:text-blue-600"
                     }`}
                   >
+                    {isActive && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-white rounded-r-full shadow-sm" />
+                    )}
+
                     <Icon
                       size={16}
                       className={`shrink-0 transition-transform duration-200 group-hover:scale-110 ${
@@ -205,7 +216,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
                     <span className="truncate">{item.label}</span>
                     {item.badge && (
                       <span
-                        className={`ml-auto text-[9px] font-black px-1.5 py-0.5 rounded-full ${
+                        className={`ml-auto text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${
                           isActive
                             ? "bg-white/20 text-white"
                             : "bg-blue-100 text-blue-700"
@@ -223,11 +234,11 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
       </nav>
 
       {/* Bottom Sign Out */}
-      <div className="p-3 border-t border-slate-100 bg-slate-50/60 space-y-1.5">
+      <div className="p-3 border-t border-slate-100 bg-slate-50/70 space-y-1.5">
         <button
           onClick={handleLogout}
           disabled={isLoggingOut}
-          className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs transition-colors cursor-pointer disabled:opacity-50"
+          className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs transition-colors cursor-pointer disabled:opacity-50 active:scale-95"
         >
           <LogOut size={14} />
           <span>{isLoggingOut ? "Signing out..." : "Sign Out"}</span>

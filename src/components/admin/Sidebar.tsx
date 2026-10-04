@@ -23,7 +23,6 @@ import {
   Search,
   Ticket,
   ShieldCheck,
-  Zap,
 } from "lucide-react";
 import { useLogoutMutation } from "@/lib/api/authApi";
 import { useDispatch, useSelector } from "react-redux";
@@ -172,12 +171,12 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   }, [pathname]);
 
   return (
-    <aside className="relative z-50 flex h-full w-[260px] flex-col border-r border-slate-200/80 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-      {/* Brand & Badge Header */}
-      <div className="p-4 pb-3 flex flex-col items-start gap-2.5 border-b border-slate-100">
+    <aside className="relative z-50 flex h-full w-[260px] flex-col border-r border-slate-200/80 bg-white shadow-[6px_0_30px_rgba(0,0,0,0.015)]">
+      {/* Brand & Super Admin Badge Header */}
+      <div className="p-4 pb-3 flex flex-col items-start gap-2.5 border-b border-slate-100 bg-gradient-to-b from-slate-50/60 to-white">
         <div className="flex items-center justify-between w-full">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#5B50E6] to-indigo-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-300">
+            <div className="relative w-9 h-9 rounded-xl bg-gradient-to-tr from-[#5B50E6] via-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md shadow-[#5B50E6]/25 group-hover:scale-105 transition-transform duration-300">
               <GraduationCap className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
@@ -201,18 +200,18 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         </div>
 
         <div className="flex items-center gap-2 w-full pt-1">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-[10px] font-extrabold text-[#5B50E6] tracking-wider uppercase">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-100/90 text-[10px] font-black text-[#5B50E6] tracking-wider uppercase">
             <ShieldCheck size={12} className="text-[#5B50E6]" />
             SUPER ADMIN
           </span>
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-50 text-[10px] font-bold text-emerald-600 border border-emerald-100 ml-auto">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-50 text-[10px] font-bold text-emerald-600 border border-emerald-100/90 ml-auto">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             v2.4
           </span>
         </div>
       </div>
 
-      {/* Search Input */}
+      {/* Search Input Bar */}
       <div className="px-3 pt-3 pb-1">
         <div className="relative flex items-center">
           <Search className="absolute left-3 text-slate-400 w-4 h-4 pointer-events-none" />
@@ -221,30 +220,43 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
             placeholder="Search menu..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200/80 rounded-xl py-2 pl-9 pr-3 text-xs font-semibold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#5B50E6] focus:bg-white focus:ring-2 focus:ring-[#5B50E6]/10 transition-all"
+            className="w-full bg-slate-50 border border-slate-200/80 rounded-xl py-2 pl-9 pr-7 text-xs font-semibold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#5B50E6] focus:bg-white focus:ring-2 focus:ring-[#5B50E6]/10 transition-all shadow-2xs"
           />
-          {searchQuery && (
+          {searchQuery ? (
             <button
               onClick={() => setSearchQuery("")}
               className="absolute right-2 text-slate-400 hover:text-slate-600 p-0.5"
             >
               <X size={12} />
             </button>
+          ) : (
+            <span className="absolute right-2.5 text-[9px] font-bold text-slate-300 font-mono pointer-events-none">
+              ⌘K
+            </span>
           )}
         </div>
       </div>
 
-      {/* Navigation Groups */}
-      <nav className="flex-1 px-3 py-2 space-y-4 overflow-y-auto custom-sidebar-scrollbar">
+      {/* Navigation Menu with Ultra-Thin Custom Scrollbar */}
+      <nav
+        className="flex-1 px-3 py-2 space-y-4 overflow-y-auto custom-sidebar-scrollbar
+          [scrollbar-width:thin] [scrollbar-color:rgba(91,80,230,0.25)_transparent]
+          [&::-webkit-scrollbar]:w-[3.5px]
+          [&::-webkit-scrollbar-track]:bg-transparent
+          [&::-webkit-scrollbar-thumb]:rounded-full
+          [&::-webkit-scrollbar-thumb]:bg-[#5B50E6]/25
+          hover:[&::-webkit-scrollbar-thumb]:bg-[#5B50E6]/50
+        "
+      >
         {/* Main Website Quick Link */}
         <div>
           <Link
             href="/"
             onClick={onClose}
-            className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all duration-200 group"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all duration-200 group"
           >
             <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-[#5B50E6]/10 group-hover:text-[#5B50E6] transition-colors">
-              <Home size={15} />
+              <Home size={14} />
             </div>
             <span>Main Website</span>
             <ChevronRight size={14} className="ml-auto text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all" />
@@ -265,7 +277,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
             <div key={group.label} className="space-y-1">
               <button
                 onClick={toggleGroup}
-                className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-black tracking-widest text-slate-400 uppercase hover:text-slate-600 transition-colors"
+                className="w-full flex items-center justify-between px-3 py-1 text-[10px] font-black tracking-widest text-slate-400 uppercase hover:text-slate-600 transition-colors cursor-pointer"
               >
                 <span>{group.label}</span>
                 <ChevronRight
@@ -283,7 +295,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.18, ease: "easeInOut" }}
-                    className="space-y-0.5 overflow-hidden"
+                    className="space-y-1 overflow-hidden pt-0.5"
                   >
                     {group.items.map((item) => {
                       const isActive =
@@ -298,10 +310,14 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
                           onClick={onClose}
                           className={`relative flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-200 group ${
                             isActive
-                              ? "bg-gradient-to-r from-[#5B50E6] to-indigo-600 text-white shadow-md shadow-indigo-500/20"
-                              : "text-slate-600 hover:bg-indigo-50/60 hover:text-[#5B50E6]"
+                              ? "bg-gradient-to-r from-[#5B50E6] to-[#4D42DB] text-white shadow-[0_4px_16px_rgba(91,80,230,0.3)]"
+                              : "text-slate-600 hover:bg-indigo-50/70 hover:text-[#5B50E6]"
                           }`}
                         >
+                          {isActive && (
+                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-white rounded-r-full shadow-sm" />
+                          )}
+
                           <Icon
                             size={16}
                             className={`shrink-0 transition-transform duration-200 group-hover:scale-110 ${
@@ -311,7 +327,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
                           <span className="truncate">{item.label}</span>
                           {item.badge && (
                             <span
-                              className={`ml-auto text-[9px] font-black px-1.5 py-0.5 rounded-full ${
+                              className={`ml-auto text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${
                                 isActive
                                   ? "bg-white/20 text-white"
                                   : "bg-emerald-100 text-emerald-700"
@@ -331,10 +347,10 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         })}
       </nav>
 
-      {/* User Profile Strip & Sign Out */}
-      <div className="p-3 border-t border-slate-100 bg-slate-50/60 space-y-2">
-        <div className="flex items-center gap-3 px-2 py-1.5 rounded-xl bg-white border border-slate-200/70 shadow-2xs">
-          <div className="w-8 h-8 rounded-lg overflow-hidden bg-indigo-500 flex items-center justify-center text-white text-xs font-black shrink-0">
+      {/* User Profile Strip & Sign Out Footer */}
+      <div className="p-3 border-t border-slate-100 bg-slate-50/70 space-y-2">
+        <div className="flex items-center gap-3 px-2 py-1.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+          <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#5B50E6] flex items-center justify-center text-white text-xs font-black shrink-0 shadow-2xs">
             {avatarUrl ? (
               <img
                 src={avatarUrl}
@@ -358,7 +374,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         <button
           onClick={handleLogout}
           disabled={isLoggingOut}
-          className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs transition-colors cursor-pointer disabled:opacity-50"
+          className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs transition-colors cursor-pointer disabled:opacity-50 active:scale-95"
         >
           <LogOut size={14} />
           <span>{isLoggingOut ? "Signing out..." : "Sign Out"}</span>
