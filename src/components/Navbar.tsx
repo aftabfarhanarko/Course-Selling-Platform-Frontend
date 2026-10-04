@@ -52,7 +52,8 @@ function Header() {
   const router = useRouter();
 
   const drawerRef = useRef<HTMLDivElement>(null);
-  const profileRef = useRef<HTMLDivElement>(null);
+  const desktopProfileRef = useRef<HTMLDivElement>(null);
+  const mobileProfileRef = useRef<HTMLDivElement>(null);
 
   const dispatch = useDispatch();
   const { wishlistCount } = useWishlist();
@@ -76,17 +77,18 @@ function Header() {
 
   useEffect(() => {
     const handleOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
       if (
         isOpen &&
         drawerRef.current &&
-        !drawerRef.current.contains(e.target as Node)
+        !drawerRef.current.contains(target)
       ) {
         setIsOpen(false);
       }
       if (
         profileOpen &&
-        profileRef.current &&
-        !profileRef.current.contains(e.target as Node)
+        !desktopProfileRef.current?.contains(target) &&
+        !mobileProfileRef.current?.contains(target)
       ) {
         setProfileOpen(false);
       }
@@ -136,18 +138,21 @@ function Header() {
       ? "/affiliate/dashboard"
       : "/student/dashboard";
 
-  const handleLogout = async (closeCallback: () => void) => {
-    if (isLoggingOut) return;
-    const toastId = toast.loading("Signing out...");
+  const handleLogout = async (closeCallback?: () => void) => {
     try {
-      await logoutApi().unwrap();
+      closeCallback?.();
+      setProfileOpen(false);
+      setIsOpen(false);
+      await logoutApi().unwrap().catch(() => {});
     } catch {
+      // Ignore API logout errors
     } finally {
       dispatch(logout());
       dispatch(baseApi.util.resetApiState());
-      toast.success("Signed out", { id: toastId });
-      closeCallback();
-      window.location.href = "/login";
+      toast.success("Signed out");
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
     }
   };
 
@@ -335,7 +340,7 @@ function Header() {
                   </Link>
 
                   {/* Profile dropdown */}
-                  <div className="relative" ref={profileRef}>
+                  <div className="relative" ref={desktopProfileRef}>
                     <button
                       type="button"
                       onClick={() => setProfileOpen((v) => !v)}
@@ -392,14 +397,13 @@ function Header() {
                           )}
                           <button
                             type="button"
-                            disabled={isLoggingOut}
                             onClick={() =>
                               handleLogout(() => setProfileOpen(false))
                             }
-                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] font-semibold text-red-500 hover:bg-red-50 rounded-xl transition-all duration-300 ease-out hover:translate-x-0.5 disabled:opacity-50"
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] font-semibold text-red-500 hover:bg-red-50 rounded-xl transition-all duration-300 ease-out hover:translate-x-0.5 cursor-pointer"
                           >
                             <LogOut className="w-4 h-4" />
-                            {isLoggingOut ? "Signing out..." : "Sign Out"}
+                            Sign Out
                           </button>
                         </div>
                       </div>
@@ -613,14 +617,13 @@ function Header() {
               </Link>
               <button
                 type="button"
-                disabled={isLoggingOut}
                 onClick={() => handleLogout(() => setIsOpen(false))}
-                className="flex items-center gap-3 px-4 py-3 rounded-2xl text-[14px] font-bold text-red-500 hover:bg-red-50 hover:translate-x-0.5 transition-all duration-300 ease-out disabled:opacity-50"
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl text-[14px] font-bold text-red-500 hover:bg-red-50 hover:translate-x-0.5 transition-all duration-300 ease-out cursor-pointer"
               >
                 <div className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center">
                   <LogOut className="w-4 h-4 text-red-500" />
                 </div>
-                {isLoggingOut ? "Signing out..." : "Sign Out"}
+                Sign Out
               </button>
             </>
           )}
@@ -671,7 +674,7 @@ function Header() {
 
           {/* ── Profile tab (only when logged in) ── */}
           {isAuthenticated && (
-            <div className="relative flex-1" ref={profileRef}>
+            <div className="relative flex-1" ref={mobileProfileRef}>
               <button
                 type="button"
                 onClick={() => setProfileOpen((v) => !v)}
@@ -785,14 +788,13 @@ function Header() {
 
                     <button
                       type="button"
-                      disabled={isLoggingOut}
                       onClick={() => handleLogout(() => setProfileOpen(false))}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-red-500 hover:bg-red-50 hover:translate-x-0.5 transition-all duration-300 ease-out disabled:opacity-50"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-red-500 hover:bg-red-50 hover:translate-x-0.5 transition-all duration-300 ease-out cursor-pointer"
                     >
                       <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
                         <LogOut className="w-3.5 h-3.5 text-red-500" />
                       </div>
-                      {isLoggingOut ? "Signing out..." : "Sign Out"}
+                      Sign Out
                     </button>
                   </div>
                 </div>

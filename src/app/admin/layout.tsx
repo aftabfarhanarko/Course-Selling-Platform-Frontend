@@ -24,11 +24,13 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
 
-  const { isAuthenticated, user } = useSelector(
+  const { isAuthenticated, user, isInitialized } = useSelector(
     (state: RootState) => state.auth,
   );
 
   useEffect(() => {
+    if (!isInitialized) return;
+
     if (!isAuthenticated) {
       router.replace("/login");
       return;
@@ -44,9 +46,9 @@ export default function AdminLayout({
     ) {
       router.replace("/student");
     }
-  }, [isAuthenticated, router, user]);
+  }, [isAuthenticated, isInitialized, router, user]);
 
-  if (!isAuthenticated) return null;
+  if (!isInitialized || !isAuthenticated) return null;
 
   return (
     <div className={`${baiJamjuree.className} flex min-h-screen`}>

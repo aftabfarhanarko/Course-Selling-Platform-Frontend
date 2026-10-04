@@ -15,11 +15,13 @@ export default function AffiliateLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
-  const { isAuthenticated, user } = useSelector(
+  const { isAuthenticated, user, isInitialized } = useSelector(
     (state: RootState) => state.auth,
   );
 
   useEffect(() => {
+    if (!isInitialized) return;
+
     if (!isAuthenticated) {
       router.replace("/login");
       return;
@@ -28,9 +30,9 @@ export default function AffiliateLayout({
     if (role !== "affiliate") {
       router.replace("/");
     }
-  }, [isAuthenticated, router, user]);
+  }, [isAuthenticated, isInitialized, router, user]);
 
-  if (!isAuthenticated) return null;
+  if (!isInitialized || !isAuthenticated) return null;
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 font-sans">

@@ -96,21 +96,15 @@ export default function TopNavbar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // --- Logout handler ---
   const handleLogout = async () => {
-    if (isLoggingOut) return;
-    const toastId = toast.loading("Signing out...");
     try {
-      await logoutApi().unwrap();
-    } catch {
-      // ignore API errors – still log out locally
-    } finally {
-      dispatch(logout());
-      dispatch(baseApi.util.resetApiState());
-      toast.success("Signed out", { id: toastId });
       setDropdownOpen(false);
-      window.location.href = "/login";
-    }
+      await logoutApi().unwrap().catch(() => {});
+    } catch {}
+    dispatch(logout());
+    dispatch(baseApi.util.resetApiState());
+    toast.success("Signed out");
+    window.location.href = "/login";
   };
 
   return (

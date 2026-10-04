@@ -3,6 +3,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 interface AuthState {
   user: any | null;
   isAuthenticated: boolean;
+  isInitialized: boolean;
 }
 
 const AUTH_STORAGE_KEY = "course_platform_auth";
@@ -12,13 +13,13 @@ function cookieAttrs() {
   return window.location.protocol === "https:" ? "; Secure" : "";
 }
 
-function persistRoleCookie(role: string) {
+export function persistRoleCookie(role: string) {
   if (typeof window === "undefined") return;
   const attrs = cookieAttrs();
   document.cookie = `role=${encodeURIComponent(role)}; Path=/; Max-Age=2592000; SameSite=Lax${attrs}`;
 }
 
-function getInitialAuth(): { user: any | null; token: string | null } {
+export function getInitialAuth(): { user: any | null; token: string | null } {
   if (typeof window === "undefined") return { user: null, token: null };
 
   try {
@@ -64,11 +65,10 @@ function getInitialAuth(): { user: any | null; token: string | null } {
   }
 }
 
-const initial = getInitialAuth();
-
 const initialState: AuthState = {
-  user: initial.user,
-  isAuthenticated: !!initial.token || !!initial.user,
+  user: null,
+  isAuthenticated: false,
+  isInitialized: false,
 };
 
 const authSlice = createSlice({
@@ -78,21 +78,40 @@ const authSlice = createSlice({
     setUser: (state, action: PayloadAction<any>) => {
       state.user = action.payload;
       state.isAuthenticated = !!action.payload;
+      state.isInitialized = true;
+      if (action.payload?.role) {
+        persistRoleCookie(String(action.payload.role));
+      }
+    },
+    rehydrateAuth: (state) => {
+      const initial = getInitialAuth();
+      if (initial.user || initial.token) {
+        state.user = initial.user;
+        state.isAuthenticated = true;
+      }
+      state.isInitialized = true;
     },
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
+      state.isInitialized = true;
       if (typeof window !== "undefined") {
         try {
           localStorage.removeItem(AUTH_STORAGE_KEY);
           localStorage.removeItem("token");
           localStorage.removeItem("access_token");
-          document.cookie = "role=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+          localStorage.removeItem("accessToken");
+          sessionStorage.clear();
+          const cookieNames = ["role", "token", "access_token", "accessToken", "refreshToken", "session"];
+          cookieNames.forEach((name) => {
+            document.cookie = `${name}=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+            document.cookie = `${name}=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
+          });
         } catch {}
       }
     },
   },
 });
 
-export const { setUser, logout } = authSlice.actions;
+export const { setUser, rehydrateAuth, logout } = authSlice.actions;
 export default authSlice.reducer;

@@ -67,7 +67,7 @@ export default function BlogPage() {
         <div className="absolute top-1/3 -left-32 w-[550px] h-[550px] rounded-full bg-[#EEF2FF]/60 blur-3xl" />
       </div>
 
-      <div className="w-full max-w-7xl mx-auto relative z-10 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-11/13 mx-auto relative z-10 px-4 sm:px-6 lg:px-12">
         
         {/* ── PAGE HEADER ── */}
         <motion.div

@@ -132,18 +132,14 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
       : null;
 
   const handleLogout = async () => {
-    if (isLoggingOut) return;
-    const toastId = toast.loading("Signing out...");
     try {
-      await logoutApi().unwrap();
-    } catch {
-    } finally {
-      dispatch(logout());
-      dispatch(baseApi.util.resetApiState());
-      toast.success("Signed out", { id: toastId });
       onClose?.();
-      window.location.href = "/login";
-    }
+      await logoutApi().unwrap().catch(() => {});
+    } catch {}
+    dispatch(logout());
+    dispatch(baseApi.util.resetApiState());
+    toast.success("Signed out");
+    window.location.href = "/login";
   };
 
   // Multi-word search matching

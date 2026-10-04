@@ -92,19 +92,14 @@ export default function TopNavbar({
   const breadcrumbs = getBreadcrumbs();
 
   const handleLogout = async () => {
-    if (isLoggingOut) return;
-    setDropdownOpen(false);
-    const toastId = toast.loading("Signing out...");
     try {
-      await logoutApi().unwrap();
-    } catch {
-      // ignore API errors
-    } finally {
-      dispatch(logout());
-      dispatch(baseApi.util.resetApiState());
-      toast.success("Signed out", { id: toastId });
-      window.location.href = "/login";
-    }
+      setDropdownOpen(false);
+      await logoutApi().unwrap().catch(() => {});
+    } catch {}
+    dispatch(logout());
+    dispatch(baseApi.util.resetApiState());
+    toast.success("Signed out");
+    window.location.href = "/login";
   };
 
   return (
